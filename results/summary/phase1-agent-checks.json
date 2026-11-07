@@ -1,0 +1,39 @@
+[
+  {
+    "label": "unit tests",
+    "command": [
+      "/opt/pyvenv/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "test_empty_nvidia_output (test_hardware_probe.HardwareProbeTests.test_empty_nvidia_output) ... ok\ntest_memory_info_shape (test_hardware_probe.HardwareProbeTests.test_memory_info_shape) ... ok\ntest_parse_nvidia_smi_csv (test_hardware_probe.HardwareProbeTests.test_parse_nvidia_smi_csv) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n"
+  },
+  {
+    "label": "source verifier",
+    "command": [
+      "/opt/pyvenv/bin/python3",
+      "scripts/verify_sources.py"
+    ],
+    "returncode": 0,
+    "stdout": "{\n  \"algorithm\": \"SHA-256\",\n  \"files\": [\n    {\n      \"path\": \"reference/sources/CLAUDE_PHASE_BY_PHASE_PROMPTS.md\",\n      \"size_bytes\": 32768,\n      \"sha256\": \"e4371dae057fb5d45a5d2b43f6c53373348dc90781cbcc87c6f7e34b4579b94b\"\n    },\n    {\n      \"path\": \"reference/sources/CLAUDE_PROJECT_INSTRUCTIONS_Sparse_State_Preparation.md\",\n      \"size_bytes\": 33192,\n      \"sha256\": \"2c5ab30b8115a49757a24cedb8a758363855c2959d09d28ac466f82706d26cf2\"\n    },\n    {\n      \"path\": \"reference/sources/Sparse_Quantum_State_Preparation_Master_Guide.html\",\n      \"size_bytes\": 224116,\n      \"sha256\": \"b8f15371e37726280c49d1c16569f9baf6d13a5a9575885980e4201fd2dbf18d\"\n    },\n    {\n      \"path\": \"reference/sources/Sparse_Quantum_State_Preparation_Master_Guide.md\",\n      \"size_bytes\": 136049,\n      \"sha256\": \"e521a9dc49ec54bf98d314b82b380fc5eaf83c99c341161260b87c1c7e9a8a9d\"\n    },\n    {\n      \"path\": \"reference/sources/Sparse_State_Preparation_Implementation_Plan_14_Days.md\",\n      \"size_bytes\": 67226,\n      \"sha256\": \"dacbfaa95a5dddcd9935c3cc44446c303b330affecfa7f427a653bb57c4bd106\"\n    },\n    {\n      \"path\": \"reference/sources/q-2026-09-10-2208.pdf\",\n      \"size_bytes\": 744425,\n      \"sha256\": \"f040687b6ca31e6594dcccadd0af72322c1a36a82264e4f39d3054c97d9059a4\"\n    }\n  ],\n  \"file_count\": 6\n}\nWrote /mnt/data/phase1_build/Sparse-State-Preparation-Phase-1/research-notes/source_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "label": "hardware probe",
+    "command": [
+      "/opt/pyvenv/bin/python3",
+      "scripts/hardware_probe.py",
+      "--output",
+      "environment/agent-probe.json"
+    ],
+    "returncode": 0,
+    "stdout": "{\n  \"captured_at_utc\": \"2026-11-14T08:59:59Z\",\n  \"cpu\": {\n    \"logical_cpus\": 5,\n    \"processor\": \"\"\n  },\n  \"cpu_fallback_available\": true,\n  \"cuda_backends\": [\n    {\n      \"available\": false,\n      \"backend\": \"torch\",\n      \"installed\": true,\n      \"reason\": \"torch.cuda.is_available() returned False\",\n      \"torch_cuda_build\": null,\n      \"torch_version\": \"2.10.0+cpu\"\n    },\n    {\n      \"available\": false,\n      \"backend\": \"cupy\",\n      \"installed\": false,\n      \"reason\": \"CuPy not installed\"\n    },\n    {\n      \"available\": false,\n      \"backend\": \"numba\",\n      \"installed\": true,\n      \"reason\": \"numba.cuda.is_available() returned False\"\n    }\n  ],\n  \"cuda_kernel_verified\": false,\n  \"is_user_rtx3050_machine\": false,\n  \"machine_role\": \"agent_runtime_unclassified_until_operator_runs_probe\",\n  \"memory\": {\n    \"available_bytes\": 4731424768,\n    \"total_bytes\": 6236844032\n  },\n  \"notes\": [\n    \"nvidia-smi visibility alone is not treated as proof of CUDA execution.\",\n    \"CUDA is verified only when an installed backend executes a kernel and validates its output.\",\n    \"This report describes the machine on which the script is run; do not relabel it as another host.\"\n  ],\n  \"nvidia_devices\": [],\n  \"nvidia_smi\": {\n    \"available\": false,\n    \"command\": [\n      \"nvidia-smi\",\n      \"--query-gpu=name,uuid,memory.total,driver_version\",\n      \"--format=csv,noheader\"\n    ],\n    \"reason\": \"nvidia-smi not found\"\n  },\n  \"platform\": {\n    \"machine\": \"x86_64\",\n    \"python\": \"3.13.5 (main, Jul 15 2026, 20:25:40) [GCC 14.2.0]\",\n    \"release\": \"6.18.57\",\n    \"system\": \"Linux\",\n    \"version\": \"#1 SMP Tue Oct 20 21:56:04 UTC 2026\"\n  },\n  \"schema_version\": 1,\n  \"verified_cuda_backends\": []\n}\n",
+    "stderr": ""
+  }
+]
