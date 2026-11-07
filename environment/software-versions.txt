@@ -1,0 +1,10 @@
+Agent package build environment (not the user's laptop)
+
+OS/kernel: Linux x86_64 container (see environment/agent-environment.json)
+Python: 3.13.5
+uv: available (version not queried in final probe)
+Cargo: not available in this execution environment
+nvidia-smi: not available in this execution environment
+CUDA device: not detected in this execution environment
+
+Run `python3 scripts/hardware_probe.py --output environment/laptop-hardware.json` on the user's Ubuntu RTX 3050 laptop to produce the authoritative local report.

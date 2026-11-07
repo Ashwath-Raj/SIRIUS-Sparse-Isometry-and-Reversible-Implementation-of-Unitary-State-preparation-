@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+.env
+
+# Build and local environments
+build/
+dist/
+*.egg-info/
+.cargo/
+target/
+
+# Local telemetry may contain machine-specific details; commit only reviewed reports
+results/raw/*.jsonl
+results/raw/*.json
+results/raw/*.txt
+!results/raw/README.md
+environment/laptop-hardware.json
+
+# Handoff bundles/snapshots are generated artifacts
+handoff/*.bundle
+handoff/*.tar.gz
+handoff/*.zip
+
+# Editors/OS
+.vscode/
+.idea/
+.DS_Store
+*.swp

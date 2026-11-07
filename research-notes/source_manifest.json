@@ -1,0 +1,36 @@
+{
+  "algorithm": "SHA-256",
+  "files": [
+    {
+      "path": "reference/sources/CLAUDE_PHASE_BY_PHASE_PROMPTS.md",
+      "size_bytes": 32768,
+      "sha256": "e4371dae057fb5d45a5d2b43f6c53373348dc90781cbcc87c6f7e34b4579b94b"
+    },
+    {
+      "path": "reference/sources/CLAUDE_PROJECT_INSTRUCTIONS_Sparse_State_Preparation.md",
+      "size_bytes": 33192,
+      "sha256": "2c5ab30b8115a49757a24cedb8a758363855c2959d09d28ac466f82706d26cf2"
+    },
+    {
+      "path": "reference/sources/Sparse_Quantum_State_Preparation_Master_Guide.html",
+      "size_bytes": 224116,
+      "sha256": "b8f15371e37726280c49d1c16569f9baf6d13a5a9575885980e4201fd2dbf18d"
+    },
+    {
+      "path": "reference/sources/Sparse_Quantum_State_Preparation_Master_Guide.md",
+      "size_bytes": 136049,
+      "sha256": "e521a9dc49ec54bf98d314b82b380fc5eaf83c99c341161260b87c1c7e9a8a9d"
+    },
+    {
+      "path": "reference/sources/Sparse_State_Preparation_Implementation_Plan_14_Days.md",
+      "size_bytes": 67226,
+      "sha256": "dacbfaa95a5dddcd9935c3cc44446c303b330affecfa7f427a653bb57c4bd106"
+    },
+    {
+      "path": "reference/sources/q-2026-09-10-2208.pdf",
+      "size_bytes": 744425,
+      "sha256": "f040687b6ca31e6594dcccadd0af72322c1a36a82264e4f39d3054c97d9059a4"
+    }
+  ],
+  "file_count": 6
+}
