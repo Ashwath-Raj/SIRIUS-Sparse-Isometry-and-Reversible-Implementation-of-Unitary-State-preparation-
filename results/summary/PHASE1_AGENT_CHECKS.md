@@ -1,7 +1,8 @@
-# Actual Phase 1 check results
+# Actual Phase 1 checks (agent container)
 
-- unit tests: PASS (exit 0) — `/opt/pyvenv/bin/python3 -m unittest discover -s tests -v`
-- source verifier: PASS (exit 0) — `/opt/pyvenv/bin/python3 scripts/verify_sources.py`
-- hardware probe: PASS (exit 0) — `/opt/pyvenv/bin/python3 scripts/hardware_probe.py --output environment/agent-probe.json`
-
-The hardware probe is the agent container, not the user's RTX 3050. The agent container has no `nvidia-smi`.
+- Unit tests: PASS (3 tests; `python3 -m unittest discover -s tests -v`).
+- Source verifier: PASS; hashes regenerated from the six supplied source files.
+- Python compile check: PASS (`python3 -m compileall -q scripts tests`).
+- Hardware probe: ran successfully, but agent container has no NVIDIA device / `nvidia-smi`; this is NOT the user's RTX 3050 result.
+- Official Zenodo ZIP: not downloaded in this runtime because DNS resolution to `zenodo.org` failed.
+- User RTX 3050 CUDA kernel test: NOT RUN; requires execution on the user's Ubuntu laptop.
