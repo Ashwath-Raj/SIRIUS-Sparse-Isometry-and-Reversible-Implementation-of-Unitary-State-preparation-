@@ -50,3 +50,15 @@ The script verifies the Zenodo-recorded MD5 before extraction. It does not modif
 ## Git policy
 
 Local commits only. Never push, pull, fetch, alter remotes, amend, squash, rebase, or rewrite history. The operator will inspect this candidate and decide when/if to push from their own machine.
+
+## Exact installation into the supplied project directory
+
+See [`INSTALL_INTO_EMPTY_PROJECT_DIR.md`](INSTALL_INTO_EMPTY_PROJECT_DIR.md). The ZIP contains the repository metadata and a separately verifiable Git bundle. Extract into the user's empty `SPeed Run` directory; no remote is configured.
+
+## Phase 1 local validation script
+
+```bash
+bash scripts/run_phase1_validation.sh
+```
+
+This runs the unit tests, source verification and a strict real-CUDA kernel smoke test. It intentionally exits non-zero if no installed CUDA backend can run a kernel.

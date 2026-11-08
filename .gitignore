@@ -36,3 +36,5 @@ handoff/*.zip
 *.swp
 
 environment/agent-probe.json
+handoff/*
+!handoff/README.md
