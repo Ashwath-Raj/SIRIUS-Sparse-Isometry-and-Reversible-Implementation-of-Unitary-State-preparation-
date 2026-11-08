@@ -34,3 +34,5 @@ handoff/*.zip
 .idea/
 .DS_Store
 *.swp
+
+environment/agent-probe.json
