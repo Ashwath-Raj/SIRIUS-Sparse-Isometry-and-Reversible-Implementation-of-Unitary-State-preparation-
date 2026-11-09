@@ -11,3 +11,5 @@
 | 7 | User RTX 3050 CUDA probe | Pending user execution | Run `scripts/hardware_probe.py --require-cuda` locally |
 
 Actual focused effort in this build environment was not instrumented with a reliable wall-clock timer. Do not claim that the 4-hour phase budget was consumed or completed by a measured duration.
+
+| 8 | Added checksum-fetcher tests, strict local acceptance runner and installation guide | Complete | Five unit tests pass; see `PHASE1_VALIDATION.md` |
