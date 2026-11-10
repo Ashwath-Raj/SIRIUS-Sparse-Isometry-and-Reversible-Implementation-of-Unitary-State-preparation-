@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[project]
+name = "sparse_state_preparation"
+version = "0.1.0"
+description = "Code for the paper: Sparse quantum state preparation with improved Toffoli cost"
+readme = "README.md"
+authors = [
+    { name = "Felix Rupprecht", email = "felix.rupprecht@dlr.de" }
+]
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "qualtran>=0.7.0",
+    "rsmf>=0.2.1",
+]
+
+[tool.maturin]
+module-name = "sparse_state_preparation._isometry_algorithms"
+python-packages = ["sparse_state_preparation"]
+python-source = "src"
+
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[tool.uv.sources]
+qualtran = { git = "https://github.com/quantumlib/Qualtran" }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]
