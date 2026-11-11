@@ -1,0 +1,8 @@
+Phase 2 consolidated status (2026-11-14)
+Official archive checksum: PASS
+uv sync --frozen: PASS (exit 0)
+Rust: 30 passed, 0 failed (cargo test --locked, exit 0)
+Python: 146 passed, 3 skipped, 1 unverified (150 collected)
+Unverified: isometry_test.py::test_bloq_phases[bloq_ex1] (large 540x30 phase-simulation fixture; diagnostic timeout)
+Lockfile integrity: PASS; no source/lockfile modifications
+Decision: proceed to Phase 3 with the unverified stress test explicitly documented.

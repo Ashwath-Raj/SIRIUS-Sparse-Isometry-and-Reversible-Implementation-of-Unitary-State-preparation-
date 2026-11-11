@@ -1,0 +1,9 @@
+Operator-provided pytest output transcript (not a fresh rerun).
+Selection: collected test IDs 59 through 150, excluding test_bloq_phases[bloq_ex1] at position 58.
+Result: 89 passed, 3 skipped in 69.24s (0:01:09).
+Exit code: 0.
+The three skips were QDType incompatibilities reported by the upstream bloq autotester:
+- uncompute_test.py::test_example[qtyping-bloq_ex1]
+- uncompute_test.py::test_example[qtyping-bloq_ex2]
+- uncompute_test.py::test_example[qtyping-bloq_ex3]
+The command and complete terminal output were supplied in the conversation on 2026-11-14.

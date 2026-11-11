@@ -1,0 +1,11 @@
+Phase 2 reference audit completed at 2026-11-14T10:40:33Z
+Reference project: /home/ashwathraj/Acadimics/3.Semister3/Projects/Sparse Quantum State Preperation Reduced TOffi COst/SPeed Run/reference/authors-artifact/source/Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost
+Archive MD5: c58634ba415b4e3fb729648460f32ad7
+Python uv sync exit: 0
+Python pytest exit: 2
+Rust cargo test exit: 0
+Lockfile integrity: PASS: uv.lock and Cargo.lock unchanged
+
+IMPORTANT: inspect every log. A non-zero exit code is a failure/blocker, not a pass.
+The reference source and lockfiles must remain unchanged.
+No Git commit or remote operation was performed by this script.

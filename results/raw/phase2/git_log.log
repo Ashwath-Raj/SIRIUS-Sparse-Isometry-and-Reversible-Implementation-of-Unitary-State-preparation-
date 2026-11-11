@@ -1,0 +1,11 @@
+95da52d data: add verified official research artifact
+c15c86a chore: preserve planned phase workspace directories
+9ed8a98 docs: finalize phase one verification record
+72c7d45 test: verify artifact checksums and add local acceptance runner
+6f0e51d docs: clarify phase one agent and user validation status
+8f143b0 chore: add safe local phase handoff utility
+ba93fb6 docs: preserve immutable supplied research sources
+f8c69de docs: record actual phase one validation results
+7d5921b test: add phase one probe tests and handoff
+a29cc66 feat: add hardware probe and source integrity tools
+04d2453 docs: initialize research workspace and source audit
