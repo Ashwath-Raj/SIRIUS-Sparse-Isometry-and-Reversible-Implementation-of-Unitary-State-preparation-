@@ -11,11 +11,6 @@ from .gates import (
 from .simulator import apply_gate, simulate_basis_state, simulate_support
 from .tableau import Tableau, TableauRow
 from .resources import ResourceCounts, count_emitted_resources
-from .pui_tree import PUITreeCircuit, compile_pui_tree
-from .pui import (
-    MCXLadderCost, PUIPlan, PUINode, PUIValidationError, RepeatedPUIBound,
-    build_pui_plan, compile_mcx_coherent, mcx_ladder_cost, repeated_pui_cost_bound,
-)
 
 __all__ = [
     "ProblemValidationError", "SparseStateProblem", "UnsupportedConstructionError",
@@ -24,7 +19,18 @@ __all__ = [
     "NegativeControlToffoli", "PUIKind", "PUIMacro", "SWAP", "Toffoli", "X",
     "invert_sequence", "apply_gate", "simulate_basis_state", "simulate_support",
     "Tableau", "TableauRow", "ResourceCounts", "count_emitted_resources",
-    "MCXLadderCost", "PUIPlan", "PUINode", "PUIValidationError",
-    "RepeatedPUIBound", "build_pui_plan", "compile_mcx_coherent",
-    "mcx_ladder_cost", "repeated_pui_cost_bound", "PUITreeCircuit", "compile_pui_tree",
+]
+
+from .pui import PUIPlan, build_pui_plan, mcx_ladder_cost
+from .pui_tree import PUITreeCircuit, compile_pui_tree
+from .batched_isometry import (
+    BatchBuildStep, BatchedIsometryError, BatchedIsometryResources,
+    BatchedIsometryResult, PUIBatchEvent, run_batched_isometry,
+)
+
+__all__ += [
+    "PUIPlan", "build_pui_plan", "mcx_ladder_cost",
+    "PUITreeCircuit", "compile_pui_tree",
+    "BatchBuildStep", "BatchedIsometryError", "BatchedIsometryResources",
+    "BatchedIsometryResult", "PUIBatchEvent", "run_batched_isometry",
 ]
