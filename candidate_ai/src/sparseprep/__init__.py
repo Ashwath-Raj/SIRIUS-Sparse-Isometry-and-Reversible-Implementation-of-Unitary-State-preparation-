@@ -34,3 +34,7 @@ __all__ += [
     "BatchBuildStep", "BatchedIsometryError", "BatchedIsometryResources",
     "BatchedIsometryResult", "PUIBatchEvent", "run_batched_isometry",
 ]
+
+from .algorithm3 import Algorithm3Error, Algorithm3Event, Algorithm3Result, run_algorithm3
+
+__all__ += ["Algorithm3Error", "Algorithm3Event", "Algorithm3Result", "run_algorithm3"]
