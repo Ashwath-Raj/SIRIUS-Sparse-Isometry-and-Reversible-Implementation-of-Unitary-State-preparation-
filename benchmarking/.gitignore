@@ -1,0 +1,9 @@
+# Phase 9.2 device-local artefacts: do not commit raw device runs by default.
+local-runs/
+device-config.local.json
+machine-manifest.local.json
+results/raw-*.jsonl
+results/*.local.json
+results/plots/
+*.prof
+*.pstats

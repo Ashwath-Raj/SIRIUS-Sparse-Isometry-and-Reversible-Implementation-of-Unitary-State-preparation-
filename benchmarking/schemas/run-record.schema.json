@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/sparseprep/run-record.schema.json",
+  "title": "SparsePrep Phase 9.2 Run Record",
+  "type": "object",
+  "required": ["record_version", "run_id", "plan_id", "tier", "algorithm_id", "status", "problem", "seed", "environment", "timings", "logical_resources", "correctness", "provenance"],
+  "properties": {
+    "record_version": {"const": "1.0.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "plan_id": {"type": "string", "minLength": 1},
+    "tier": {"enum": ["smoke", "scaling", "stress", "custom"]},
+    "algorithm_id": {"type": "string"},
+    "status": {"enum": ["completed", "failed", "timed_out", "skipped", "invalid"]},
+    "problem": {"type": "object", "required": ["n", "s", "ell", "support_family", "coefficient_family", "sign_profile", "support_sha256"], "properties": {"n": {"type": "integer", "minimum": 1}, "s": {"type": "integer", "minimum": 1}, "ell": {"type": "integer", "minimum": 0}, "support_family": {"type": "string"}, "coefficient_family": {"type": "string"}, "sign_profile": {"type": "string"}, "support_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}, "additionalProperties": true},
+    "seed": {"type": "integer"},
+    "environment": {"type": "object", "required": ["hostname_alias", "os", "python", "cpu_model", "gpu_devices"], "properties": {"hostname_alias": {"type": "string"}, "os": {"type": "string"}, "python": {"type": "string"}, "cpu_model": {"type": "string"}, "gpu_devices": {"type": "array", "items": {"type": "object", "required": ["name", "memory_bytes"], "properties": {"name": {"type": "string"}, "memory_bytes": {"type": ["integer", "null"], "minimum": 0}}, "additionalProperties": true}}, "cuda_version": {"type": ["string", "null"]}, "cupy_version": {"type": ["string", "null"]}, "ram_bytes": {"type": ["integer", "null"], "minimum": 0}}, "additionalProperties": true},
+    "timings": {"type": "object", "properties": {"compile_wall_ms": {"type": ["number", "null"], "minimum": 0}, "compile_cpu_ms": {"type": ["number", "null"], "minimum": 0}, "gpu_basis_batch_wall_ms": {"type": ["number", "null"], "minimum": 0}, "gpu_kernel_ms": {"type": ["number", "null"], "minimum": 0}, "host_to_device_ms": {"type": ["number", "null"], "minimum": 0}, "device_to_host_ms": {"type": ["number", "null"], "minimum": 0}}, "additionalProperties": true},
+    "logical_resources": {"type": "object", "properties": {"logical_qubits": {"type": ["integer", "null"], "minimum": 0}, "clean_ancillas": {"type": ["integer", "null"], "minimum": 0}, "paper_accounted_toffoli": {"type": ["integer", "null"], "minimum": 0}, "coherent_toffoli": {"type": ["integer", "null"], "minimum": 0}, "emitted_toffoli_ir": {"type": ["integer", "null"], "minimum": 0}, "logical_depth": {"type": ["integer", "null"], "minimum": 0}, "native_gate_count": {"type": ["integer", "null"], "minimum": 0}, "t_count": {"type": ["integer", "null"], "minimum": 0}}, "additionalProperties": true},
+    "correctness": {"type": "object", "properties": {"statevector_status": {"enum": ["passed", "failed", "not_run_resource_cap", "not_applicable"]}, "fidelity": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "maximum_amplitude_error": {"type": ["number", "null"], "minimum": 0}, "outside_support_probability": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "workspace_leakage_probability": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "inverse_round_trip_error": {"type": ["number", "null"], "minimum": 0}}, "additionalProperties": true},
+    "provenance": {"type": "object", "required": ["git_commit", "paper_doi", "artifact_md5", "generator_version", "started_at_utc"], "properties": {"git_commit": {"type": "string"}, "paper_doi": {"type": "string"}, "artifact_md5": {"type": "string"}, "generator_version": {"type": "string"}, "started_at_utc": {"type": "string", "format": "date-time"}, "ended_at_utc": {"type": ["string", "null"], "format": "date-time"}}, "additionalProperties": true},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": false
+}

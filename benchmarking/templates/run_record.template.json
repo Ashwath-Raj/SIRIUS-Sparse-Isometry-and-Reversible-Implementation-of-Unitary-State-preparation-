@@ -1,0 +1,63 @@
+{
+  "record_version": "1.0.0",
+  "run_id": "PENDING",
+  "plan_id": "phase9-cross-device-v1",
+  "tier": "smoke",
+  "algorithm_id": "independent_batched_isometry",
+  "status": "skipped",
+  "problem": {
+    "n": 8,
+    "s": 4,
+    "ell": 2,
+    "support_family": "seeded_random",
+    "coefficient_family": "uniform_real_positive",
+    "sign_profile": "all_positive",
+    "support_sha256": "REPLACE_WITH_SHA256"
+  },
+  "seed": 17,
+  "environment": {
+    "hostname_alias": "REPLACE_WITH_NON_PERSONAL_ALIAS",
+    "os": "REPLACE",
+    "python": "REPLACE",
+    "cpu_model": "REPLACE",
+    "gpu_devices": [],
+    "cuda_version": null,
+    "cupy_version": null,
+    "ram_bytes": null
+  },
+  "timings": {
+    "compile_wall_ms": null,
+    "compile_cpu_ms": null,
+    "gpu_basis_batch_wall_ms": null,
+    "gpu_kernel_ms": null,
+    "host_to_device_ms": null,
+    "device_to_host_ms": null
+  },
+  "logical_resources": {
+    "logical_qubits": null,
+    "clean_ancillas": null,
+    "paper_accounted_toffoli": null,
+    "coherent_toffoli": null,
+    "emitted_toffoli_ir": null,
+    "logical_depth": null,
+    "native_gate_count": null,
+    "t_count": null
+  },
+  "correctness": {
+    "statevector_status": "not_run_resource_cap",
+    "fidelity": null,
+    "maximum_amplitude_error": null,
+    "outside_support_probability": null,
+    "workspace_leakage_probability": null,
+    "inverse_round_trip_error": null
+  },
+  "provenance": {
+    "git_commit": "REPLACE_WITH_GIT_SHA",
+    "paper_doi": "10.22331/q-2026-09-10-2208",
+    "artifact_md5": "c58634ba415b4e3fb729648460f32ad7",
+    "generator_version": "REPLACE",
+    "started_at_utc": "2026-01-01T00:00:00Z",
+    "ended_at_utc": null
+  },
+  "notes": "TEMPLATE ONLY. No measurement is represented by this file. Replace all placeholders and remove template status before archival."
+}

@@ -1,64 +1,95 @@
-# Sparse Quantum State Preparation — Reproduction Workspace
+# Independent Sparse Quantum State Preparation
 
-Research target: Felix Rupprecht and Sabine Wölk, “Sparse quantum state preparation with improved Toffoli cost”, *Quantum* 10, 2208 (2026).
+**Research implementation and reproducibility study**  
+**Paper:** Felix Rupprecht and Sabine Wölk, *Sparse quantum state preparation with improved Toffoli cost*, Quantum 10, 2208 (2026). [DOI: 10.22331/q-2026-09-10-2208](https://doi.org/10.22331/q-2026-09-10-2208)
 
-Paper: <https://quantum-journal.org/papers/q-2026-09-10-2208/>
-Official research artifact: <https://zenodo.org/records/18234600>
+## Project objective
 
-## Phase status
+Independently implement the paper's sparse-state preparation construction, verify the reversible mapping and full logical state-preparation behavior, then benchmark its resource scaling and classical/GPU execution characteristics against a Malvetti-style baseline and the authors' reference artifact.
 
-**Phase 1: source audit, workspace initialization, and hardware-probe tooling.**
+Given unique computational-basis states `x_i` and normalized coefficients `c_i`, the target is
 
-This package is a Phase 1 bootstrap. It does not yet implement the Malvetti baseline, PUI, or Algorithms 1/3. Those are later roadmap phases and are deliberately not represented as complete.
+\[
+|\psi\rangle=\sum_{i=0}^{s-1} a_i c_i|x_i\rangle,
+\qquad a_i\in\{+1,-1\}.
+\]
 
-## Workspace layout
+## Implementation status
 
-- `reference/sources/`: exact copies of the user-supplied research sources.
-- `reference/authors-artifact/`: reserved for the official Zenodo artifact; keep it immutable.
-- `candidate_ai/`: reserved for independent candidate code. Do not copy official artifact source here.
-- `research-notes/`: source provenance, known source issues, and decisions.
-- `environment/`: machine-specific probe output and software inventory.
-- `scripts/`: source verification, hardware detection and reference-artifact retrieval helpers.
-- `tests/`: lightweight Phase 1 tests.
-- `results/`: benchmark output locations for later phases.
-- `handoff/`: local Git bundle and source snapshot generated after commits.
+| Milestone | Scope | Status |
+|---|---|---|
+| Phase 1–2 | Workspace, source integrity, reference audit | Completed |
+| Phase 3 | Sparse-state model, gate IR, CPU/CuPy basis-row simulators | Completed |
+| Phase 4 | Malvetti isometry baseline | Completed |
+| Phase 5 | Restricted/unrestricted PUI tree emitter | Completed |
+| Phase 6 | Batched isometry construction | Completed |
+| Phase 7 | Algorithm 3 sign/marker handling | Completed |
+| Phase 8 | Phase synthesis and end-to-end logical state preparation | Completed |
+| Phase 9.1 | Benchmark architecture, experimental plan, data schemas, reproducibility and DGX access brief | Completed in this release |
+| Phase 9.2 | Device-local benchmark runs and result collection | Not started; intentionally local/uncommitted |
 
-## Run on the primary Ubuntu laptop
+## Current implementation
 
-```bash
-python3 scripts/hardware_probe.py --output environment/laptop-hardware.json
-python3 -m unittest discover -s tests -v
-python3 scripts/verify_sources.py
+- `candidate_ai/src/sparseprep/model.py` — validated problem model.
+- `candidate_ai/src/sparseprep/malvetti_baseline.py` — isometry baseline.
+- `candidate_ai/src/sparseprep/batched_isometry.py` — independent batched construction.
+- `candidate_ai/src/sparseprep/pui_tree.py` — PUI tree emitter.
+- `candidate_ai/src/sparseprep/algorithm3.py` — signed/marker-aware construction.
+- `candidate_ai/src/sparseprep/phase_synthesis.py` — real-sign diagonal phase oracle.
+- `candidate_ai/src/sparseprep/state_preparation.py` — complete logical sparse-state preparation.
+
+Public entrypoints:
+
+```python
+from sparseprep import (
+    SparseStateProblem,
+    run_malvetti_baseline,
+    run_batched_isometry,
+    run_algorithm3,
+    compile_sparse_state_preparation,
+    prepare_sparse_state,
+)
 ```
 
-The probe tests CUDA through any available PyTorch, CuPy, or Numba CUDA runtime. It does not equate `nvidia-smi` visibility with a successful CUDA kernel. Install only the backend you intend to use; CUDA libraries are optional at this phase.
+## Validation
 
-For a strict CUDA check (non-zero exit if no CUDA kernel ran):
-
-```bash
-python3 scripts/hardware_probe.py --require-cuda --output environment/laptop-hardware.json
-```
-
-## Fetch the authors' artifact
+Use the project's existing virtual environment:
 
 ```bash
-python3 scripts/fetch_reference_artifact.py --output reference/authors-artifact/official-artifact.zip
+PYTHONPATH=candidate_ai/src .venv/bin/python -m pytest candidate_ai/tests -q
 ```
 
-The script verifies the Zenodo-recorded MD5 before extraction. It does not modify any extracted files. Inspect the artifact's README and lockfile warning before installing it. Do not regenerate its `uv.lock`.
+Latest operator-reported Phase 8.2 regression: **148 passed, 2 skipped**. The two skips were optional CUDA tests unavailable in that Python environment. This is a correctness-test result, not a benchmark result.
 
-## Git policy
+## Benchmark design (Phase 9.1)
 
-Local commits only. Never push, pull, fetch, alter remotes, amend, squash, rebase, or rewrite history. The operator will inspect this candidate and decide when/if to push from their own machine.
+Dean-facing access brief: [`docs/PHASE9_1_DGX_ACCESS_BRIEF.pdf`](docs/PHASE9_1_DGX_ACCESS_BRIEF.pdf) (print-ready) and [`docs/PHASE9_1_DGX_ACCESS_BRIEF.md`](docs/PHASE9_1_DGX_ACCESS_BRIEF.md).
 
-## Exact installation into the supplied project directory
+The committed `benchmarking/` directory defines a reproducible plan, metrics catalog, run/machine/summary schemas and templates. It separates:
 
-See [`INSTALL_INTO_EMPTY_PROJECT_DIR.md`](INSTALL_INTO_EMPTY_PROJECT_DIR.md). The ZIP contains the repository metadata and a separately verifiable Git bundle. Extract into the user's empty `SPeed Run` directory; no remote is configured.
+1. CPU construction time and peak memory;
+2. logical Toffoli/ancilla/gate resources;
+3. correctness and bounded exact statevector validation;
+4. optional GPU throughput for batches of computational-basis rows.
 
-## Phase 1 local validation script
+Validate and enumerate the proposed workloads without executing any algorithm:
 
 ```bash
-bash scripts/run_phase1_validation.sh
+python scripts/phase9_1_validate.py --plan benchmarking/config/phase9_1_benchmark_plan.json
+python scripts/phase9_1_validate.py --plan benchmarking/config/phase9_1_benchmark_plan.json --tier smoke --emit-manifest /tmp/sparseprep-smoke-plan.json
 ```
 
-This runs the unit tests, source verification and a strict real-CUDA kernel smoke test. It intentionally exits non-zero if no installed CUDA backend can run a kernel.
+## GPU boundary — read before making claims
+
+The current CuPy backend is a uint64 **basis-state row batch** simulator for 1–63 data wires. It is not a complex-amplitude statevector simulator. Phase 8's exact complex statevector verifier is CPU-side and capped. The current implementation does not pool GPU memory or distribute one statevector across multiple GPUs. Classical isometry construction remains CPU-side. GPU speedup claims are allowed only for the GPU-executed basis-row batch lane, with transfer time separated.
+
+## Phase 9.2
+
+Phase 9.2 is the device-local execution stage: hardware probes, environment setup, authors' artifact adapter, controlled runs on each available machine, raw JSON records, summary plots and comparison analysis. Keep machine manifests, raw results, temporary virtual environments and device-specific configuration local/uncommitted. Do not commit benchmark results until provenance and review are complete.
+
+## Research sources
+
+- Paper: https://quantum-journal.org/papers/q-2026-09-10-2208/
+- DOI: https://doi.org/10.22331/q-2026-09-10-2208
+- Authors' code and assets: https://zenodo.org/records/18234600
+- Expected authors' artifact MD5: `c58634ba415b4e3fb729648460f32ad7`

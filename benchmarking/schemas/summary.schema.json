@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SparsePrep Aggregated Benchmark Summary",
+  "type": "object",
+  "required": ["summary_version", "plan_id", "aggregation_method", "grouping_keys", "groups", "source_record_hashes"],
+  "properties": {
+    "summary_version": {"const": "1.0.0"}, "plan_id": {"type": "string"}, "aggregation_method": {"type": "string"},
+    "grouping_keys": {"type": "array", "items": {"type": "string"}},
+    "groups": {"type": "array", "items": {"type": "object", "required": ["algorithm_id", "n", "s", "metric", "count", "median", "iqr", "minimum", "maximum"], "properties": {"algorithm_id": {"type": "string"}, "n": {"type": "integer"}, "s": {"type": "integer"}, "metric": {"type": "string"}, "count": {"type": "integer", "minimum": 1}, "median": {"type": "number"}, "iqr": {"type": "number"}, "minimum": {"type": "number"}, "maximum": {"type": "number"}}, "additionalProperties": true}},
+    "source_record_hashes": {"type": "array", "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+  },
+  "additionalProperties": false
+}

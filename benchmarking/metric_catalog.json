@@ -1,0 +1,31 @@
+{
+  "catalog_version": "1.0.0",
+  "principle": "Store raw observations and provenance. A metric that is not yet instrumented must be null with a reason; never populate it with an estimate presented as a measurement.",
+  "metrics": [
+    {"id":"n_qubits","category":"problem_shape","unit":"qubits","method":"input","available_now":true,"definition":"Width of every target computational-basis support string."},
+    {"id":"s_support_size","category":"problem_shape","unit":"states","method":"input","available_now":true,"definition":"Number of unique target support rows."},
+    {"id":"ell_compact_width","category":"problem_shape","unit":"qubits","method":"derived","available_now":true,"definition":"ceil(log2(s)); computed with integer-safe bit length."},
+    {"id":"compile_wall_ms","category":"classical_construction","unit":"ms","method":"perf_counter_ns","available_now_in_9_2":false,"definition":"Elapsed wall-clock time for a single named compiler entrypoint; excludes problem generation and plotting."},
+    {"id":"compile_cpu_ms","category":"classical_construction","unit":"ms","method":"process_time_ns","available_now_in_9_2":false,"definition":"Process CPU time during the same compilation interval."},
+    {"id":"peak_rss_bytes","category":"classical_construction","unit":"bytes","method":"OS process peak RSS normalized to bytes","available_now_in_9_2":false,"definition":"Peak resident set size; record OS, API and normalization convention."},
+    {"id":"paper_accounted_toffoli","category":"logical_resources","unit":"Toffoli gates","method":"algorithm resource accounting","available_now":true,"definition":"The paper-accounted Algorithm 3 Toffoli estimate. Keep separate from coherent and dense-loader overhead."},
+    {"id":"coherent_toffoli","category":"logical_resources","unit":"Toffoli gates","method":"algorithm resource accounting","available_now":true,"definition":"Fully coherent count including explicit compute/uncompute in the current model."},
+    {"id":"emitted_toffoli_ir","category":"logical_resources","unit":"Toffoli gates","method":"gate IR histogram","available_now":true,"definition":"Explicit TOFFOLI operations emitted by the logical circuit; does not include undecomposed MCX/PUI macros."},
+    {"id":"logical_gate_histogram","category":"logical_resources","unit":"gate counts","method":"gate IR histogram","available_now":true,"definition":"Counts by logical operation kind, with symbolic macros in separate fields."},
+    {"id":"logical_qubits","category":"logical_resources","unit":"qubits","method":"compiled resource object","available_now":true,"definition":"Data wires + marker + clean ancillas in the logical reference circuit."},
+    {"id":"clean_ancillas","category":"logical_resources","unit":"qubits","method":"compiled resource object","available_now":true,"definition":"Maximum simultaneously allocated clean work ancillas under the documented circuit model."},
+    {"id":"logical_depth","category":"logical_resources","unit":"layers","method":"dependency-DAG scheduler","available_now_in_9_2":false,"definition":"Critical-path depth after gate dependencies are modeled. Do not substitute gate count."},
+    {"id":"native_gate_count","category":"logical_resources","unit":"native gates","method":"backend transpiler","available_now_in_9_2":false,"definition":"Counts only after choosing a backend basis and transpiler version."},
+    {"id":"t_count","category":"logical_resources","unit":"T gates","method":"documented Toffoli decomposition","available_now_in_9_2":false,"definition":"Report only with an explicit exact/approximate decomposition convention."},
+    {"id":"state_fidelity","category":"correctness","unit":"[0,1]","method":"exact statevector verifier","available_now":true,"definition":"Squared overlap with the target state, for instances that fit the exact verifier cap."},
+    {"id":"maximum_amplitude_error","category":"correctness","unit":"absolute amplitude","method":"exact statevector verifier","available_now":true,"definition":"Maximum absolute elementwise complex-amplitude deviation from the target vector."},
+    {"id":"outside_support_probability","category":"correctness","unit":"probability","method":"exact statevector verifier","available_now":true,"definition":"Total probability outside the declared sparse support."},
+    {"id":"workspace_leakage_probability","category":"correctness","unit":"probability","method":"exact statevector verifier","available_now":true,"definition":"Total probability in any nonzero marker or work-ancilla sector."},
+    {"id":"gpu_basis_batch_wall_ms","category":"gpu_basis_batch","unit":"ms","method":"synchronized CUDA timing","available_now_in_9_2":false,"definition":"Time for a CuPy batch of basis rows, with host-device transfer measured separately."},
+    {"id":"gpu_kernel_ms","category":"gpu_basis_batch","unit":"ms","method":"CUDA events or synchronized event timing","available_now_in_9_2":false,"definition":"GPU execution interval only; CUDA stream is synchronized at boundaries."},
+    {"id":"gpu_memory_peak_bytes","category":"gpu_basis_batch","unit":"bytes","method":"CuPy memory-pool/device query","available_now_in_9_2":false,"definition":"Per-device peak/used bytes. Never sum as if GPUs shared a single memory pool."},
+    {"id":"gpu_device_name","category":"environment_provenance","unit":"string","method":"CUDA runtime device query","available_now_in_9_2":false,"definition":"Exact GPU model reported by runtime."},
+    {"id":"git_commit","category":"environment_provenance","unit":"git SHA","method":"git rev-parse HEAD","available_now_in_9_2":false,"definition":"Exact source revision used for the run."},
+    {"id":"paper_artifact_md5","category":"environment_provenance","unit":"MD5","method":"verified artifact manifest","available_now":true,"definition":"Expected authors' artifact MD5 recorded in the project source audit; verify local artifact before external comparisons."}
+  ]
+}

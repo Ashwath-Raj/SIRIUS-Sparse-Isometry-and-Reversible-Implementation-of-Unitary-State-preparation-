@@ -1,0 +1,12 @@
+{
+  "manifest_version": "1.0.0",
+  "machine_id": "REPLACE_WITH_ALIAS",
+  "captured_at_utc": "2026-01-01T00:00:00Z",
+  "os": {"name": "REPLACE", "version": "REPLACE", "kernel": "REPLACE"},
+  "python": {"implementation": "CPython", "version": "REPLACE", "executable": "REDACT_OR_ALIAS"},
+  "cpu": {"model": "REPLACE", "logical_cores": null, "physical_cores": null, "architecture": "REPLACE"},
+  "memory": {"ram_total_bytes": null, "swap_total_bytes": null},
+  "gpu_devices": [],
+  "software": {"nvidia_driver": null, "cuda_runtime": null, "cuda_toolkit": null, "cupy": null, "numpy": null, "git": "REPLACE"},
+  "notes": "Capture each GPU separately. Do not assume memory is pooled across devices. Redact account names, serial numbers and private hostnames."
+}

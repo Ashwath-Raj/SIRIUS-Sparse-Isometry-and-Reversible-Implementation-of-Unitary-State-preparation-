@@ -1,28 +1,26 @@
-# Phase 3 — Independent model, gate IR and validation harness
+# Candidate implementation package
 
-This package is an independent implementation workspace. It does not import or copy implementation code from the authors' reference package.
+This directory contains an independent Python implementation of the sparse quantum state-preparation algorithms and logical circuit model.
 
-## Conventions
+## Environment
 
-- Support strings use big-endian order: the leftmost character is the most-significant bit.
-- Gate wire `0` is the leftmost/most-significant bit.
-- Original support rows, current transformed rows, stable row IDs and phase signs remain separate in the tableau.
-- Coefficients are optional and must be normalized when provided.
-- `s=1` is explicit; the non-trivial batching width is intentionally undefined for that special case.
-- The resource histogram reports emitted gate categories. `decomposed_toffoli=None` means no decomposition has been supplied; it does not mean zero.
-- Restricted/unrestricted PUI are represented as symbolic macros with interval and `(L,g)` metadata. They are not simulated in Phase 3; their paper-specific expansion belongs to Phase 5.
-- Candidate support patterns are structural witnesses. They are not claimed to trigger a specific algorithm branch until Phase 4/5 trace instrumentation confirms it.
+The Phase 3–8 core is CPU-first. CuPy is optional and used only for vectorized `uint64` batches of computational-basis rows (`1 <= n <= 63`). It is not used by the current exact complex-statevector preparation verifier.
 
-## Run tests from the project root
+## Usage
 
-Use the project's existing Python environment. NumPy and CuPy are optional for the Phase 3 CPU package; CuPy parity tests run when CUDA is available.
+Run from repository root:
 
 ```bash
-PYTHONPATH=candidate_ai/src .venv/bin/python -m pytest candidate_ai/tests -vv
+PYTHONPATH=candidate_ai/src .venv/bin/python -c 'from sparseprep import SparseStateProblem, prepare_sparse_state; p = SparseStateProblem(n=4, support=("0001", "0110", "1011"), coefficients=(1/3**0.5, 1j/3**0.5, -1/3**0.5), signs=(1,-1,1)); c, m = prepare_sparse_state(p); print(m); print(c.resources)'
 ```
 
-If the project's root environment uses a different path, substitute its Python executable. Do not install anything into `reference/authors-artifact/` and do not regenerate the authors' lockfiles.
+For construction without an exponential statevector allocation, use `compile_sparse_state_preparation`. Exact verification has a configurable total-qubit cap.
 
-## Phase 3 boundaries
+## Comparators
 
-This phase creates the data contract, basis-state gate simulator, tableau, resource histogram, deterministic support generators and optional CuPy parity backend. It does not implement Malvetti, PUI expansion, the batching algorithm or Algorithm 3. Those belong to later phases and must be derived from the paper before coding.
+- `run_malvetti_baseline(problem)` — sequential isometry baseline.
+- `run_batched_isometry(problem)` — independent batched isometry constructor.
+- `run_algorithm3(problem, signs=...)` — sign-marker Algorithm 3 path.
+- `compile_sparse_state_preparation(problem)` — complete logical circuit compilation.
+
+The external authors' artifact is maintained separately and is not imported by this package.
