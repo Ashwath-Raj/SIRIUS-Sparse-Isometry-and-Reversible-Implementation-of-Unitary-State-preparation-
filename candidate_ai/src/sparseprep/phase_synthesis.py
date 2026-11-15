@@ -18,16 +18,21 @@ class PhaseSynthesisError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class QuantumOperation:
-    """Small exact operation IR used by the Phase-8 quantum simulator."""
+    """Exact logical gate IR used by the Phase-8 statevector verifier.
+
+    ``angle`` is used by RY/PHASE gates (radians); ``phase`` is reserved for
+    GLOBAL_PHASE. Wire order is big-endian throughout.
+    """
 
     kind: str
     target: int | None = None
     controls: tuple[int, ...] = ()
     control_values: tuple[int, ...] = ()
     phase: complex = 1 + 0j
+    angle: float = 0.0
 
     def __post_init__(self) -> None:
-        valid = {"H", "X", "Z", "CX", "TOFFOLI", "GLOBAL_PHASE"}
+        valid = {"H", "X", "Z", "RY", "PHASE", "CX", "TOFFOLI", "SWAP", "GLOBAL_PHASE"}
         if self.kind not in valid:
             raise PhaseSynthesisError(f"unsupported operation kind: {self.kind}")
         if self.kind == "GLOBAL_PHASE":
@@ -41,21 +46,24 @@ class QuantumOperation:
             raise PhaseSynthesisError("operation target must be a non-negative integer")
         if any(isinstance(w, bool) or not isinstance(w, int) or w < 0 for w in self.controls):
             raise PhaseSynthesisError("control wires must be non-negative integers")
-        if self.kind in {"H", "X", "Z"} and self.controls:
+        if self.target in self.controls or len(set(self.controls)) != len(self.controls):
+            raise PhaseSynthesisError("control and target wires must be distinct")
+        if self.kind in {"H", "X", "Z", "RY", "PHASE"} and self.controls:
             raise PhaseSynthesisError(f"{self.kind} cannot have controls")
         if self.kind == "CX" and len(self.controls) != 1:
             raise PhaseSynthesisError("CX requires exactly one control")
         if self.kind == "TOFFOLI" and len(self.controls) != 2:
             raise PhaseSynthesisError("TOFFOLI requires exactly two controls")
-        if self.kind in {"CX", "TOFFOLI"}:
-            if self.target in self.controls or len(set(self.controls)) != len(self.controls):
-                raise PhaseSynthesisError("control and target wires must be distinct")
-            if self.control_values and len(self.control_values) != len(self.controls):
-                raise PhaseSynthesisError("control_values length mismatch")
-            if any(v not in (0, 1) for v in self.control_values):
-                raise PhaseSynthesisError("control values must be bits")
-            if self.control_values and any(v != 1 for v in self.control_values):
-                raise PhaseSynthesisError("lowered CX/Toffoli operations use positive controls")
+        if self.kind == "SWAP" and len(self.controls) != 1:
+            raise PhaseSynthesisError("SWAP requires the second wire in controls")
+        if self.control_values:
+            raise PhaseSynthesisError(f"{self.kind} does not accept control_values in this lowered IR")
+        if self.kind in {"RY", "PHASE"}:
+            import math
+            if isinstance(self.angle, bool) or not isinstance(self.angle, (int, float)) or not math.isfinite(float(self.angle)):
+                raise PhaseSynthesisError("rotation/phase angle must be a finite real number")
+        elif self.angle != 0.0:
+            raise PhaseSynthesisError(f"{self.kind} does not use an angle")
 
 
 @dataclass(frozen=True, slots=True)
@@ -268,7 +276,7 @@ def compile_real_sign_phase_oracle(algorithm3_result) -> PhaseOracleCircuit:
 def apply_operations(
     state: Sequence[complex], n_qubits: int, operations: Iterable[QuantumOperation]
 ) -> tuple[complex, ...]:
-    """Apply the exact IR to a statevector using big-endian logical wires."""
+    """Apply the exact logical gate IR to a statevector (big-endian wires)."""
     if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or n_qubits < 0:
         raise PhaseSynthesisError("n_qubits must be a non-negative integer")
     amplitudes = [complex(value) for value in state]
@@ -283,6 +291,7 @@ def apply_operations(
         if any(wire >= n_qubits for wire in wires):
             raise PhaseSynthesisError("operation references a wire outside the statevector")
         target_mask = 1 << (n_qubits - 1 - operation.target)
+        control_masks = tuple(1 << (n_qubits - 1 - wire) for wire in operation.controls)
         if operation.kind == "H":
             scale = 1.0 / sqrt(2.0)
             for index in range(len(amplitudes)):
@@ -300,11 +309,31 @@ def apply_operations(
             for index in range(len(amplitudes)):
                 if index & target_mask:
                     amplitudes[index] = -amplitudes[index]
+        elif operation.kind == "RY":
+            from math import cos, sin
+            c, ss = cos(operation.angle / 2.0), sin(operation.angle / 2.0)
+            for index in range(len(amplitudes)):
+                if not index & target_mask:
+                    partner = index | target_mask
+                    a, b = amplitudes[index], amplitudes[partner]
+                    amplitudes[index] = c * a - ss * b
+                    amplitudes[partner] = ss * a + c * b
+        elif operation.kind == "PHASE":
+            import cmath
+            factor = cmath.exp(1j * operation.angle)
+            for index in range(len(amplitudes)):
+                if index & target_mask:
+                    amplitudes[index] *= factor
         elif operation.kind in {"CX", "TOFFOLI"}:
-            control_masks = tuple(1 << (n_qubits - 1 - wire) for wire in operation.controls)
             for index in range(len(amplitudes)):
                 if not index & target_mask and all(index & mask for mask in control_masks):
                     partner = index | target_mask
+                    amplitudes[index], amplitudes[partner] = amplitudes[partner], amplitudes[index]
+        elif operation.kind == "SWAP":
+            other_mask = control_masks[0]
+            for index in range(len(amplitudes)):
+                if not index & target_mask and index & other_mask:
+                    partner = index ^ target_mask ^ other_mask
                     amplitudes[index], amplitudes[partner] = amplitudes[partner], amplitudes[index]
         else:  # pragma: no cover - guarded by QuantumOperation validation
             raise PhaseSynthesisError(f"unsupported operation {operation.kind}")

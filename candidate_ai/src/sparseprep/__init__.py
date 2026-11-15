@@ -49,3 +49,15 @@ __all__ += [
     "QuantumOperation", "apply_operations", "compile_real_sign_phase_oracle",
     "direct_sign_phase",
 ]
+
+from .state_preparation import (
+    StatePreparationError, StatePreparationMetrics, SparseStatePreparationCircuit,
+    SparseStatePreparationResources, StageCounts, compile_dense_compact_preparation,
+    compile_sparse_state_preparation, prepare_sparse_state,
+)
+
+__all__ += [
+    "StatePreparationError", "StatePreparationMetrics", "SparseStatePreparationCircuit",
+    "SparseStatePreparationResources", "StageCounts", "compile_dense_compact_preparation",
+    "compile_sparse_state_preparation", "prepare_sparse_state",
+]
