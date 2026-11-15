@@ -38,3 +38,14 @@ __all__ += [
 from .algorithm3 import Algorithm3Error, Algorithm3Event, Algorithm3Result, run_algorithm3
 
 __all__ += ["Algorithm3Error", "Algorithm3Event", "Algorithm3Result", "run_algorithm3"]
+
+from .phase_synthesis import (
+    PhaseOracleCircuit, PhaseOracleResources, PhaseSynthesisError, QuantumOperation,
+    apply_operations, compile_real_sign_phase_oracle, direct_sign_phase,
+)
+
+__all__ += [
+    "PhaseOracleCircuit", "PhaseOracleResources", "PhaseSynthesisError",
+    "QuantumOperation", "apply_operations", "compile_real_sign_phase_oracle",
+    "direct_sign_phase",
+]
