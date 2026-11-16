@@ -12,6 +12,15 @@ from .simulator import apply_gate, simulate_basis_state, simulate_support
 from .tableau import Tableau, TableauRow
 from .resources import ResourceCounts, count_emitted_resources
 
+from .malvetti_baseline import (
+    MalvettiBaselineResult, MalvettiResourceReport, MalvettiStep, run_malvetti_baseline,
+)
+MalvettiResult = MalvettiBaselineResult
+from .support_generators import (
+    partial_final_batch_problem, random_problem, random_support,
+    support_inside_subspace, support_with_repeated_prefix,
+)
+
 __all__ = [
     "ProblemValidationError", "SparseStateProblem", "UnsupportedConstructionError",
     "bitstring_to_int", "ceil_log2_positive", "int_to_bitstring",
@@ -19,6 +28,9 @@ __all__ = [
     "NegativeControlToffoli", "PUIKind", "PUIMacro", "SWAP", "Toffoli", "X",
     "invert_sequence", "apply_gate", "simulate_basis_state", "simulate_support",
     "Tableau", "TableauRow", "ResourceCounts", "count_emitted_resources",
+    "MalvettiResourceReport", "MalvettiResult", "MalvettiStep", "run_malvetti_baseline",
+    "partial_final_batch_problem", "random_problem", "random_support",
+    "support_inside_subspace", "support_with_repeated_prefix",
 ]
 
 from .pui import PUIPlan, build_pui_plan, mcx_ladder_cost

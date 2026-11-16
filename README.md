@@ -1,44 +1,231 @@
-# Independent Sparse Quantum State Preparation
+# SIRIUS — Sparse Isometry and Reversible Implementation of Unitary State Preparation
 
-**Research implementation and reproducibility study**  
-**Paper:** Felix Rupprecht and Sabine Wölk, *Sparse quantum state preparation with improved Toffoli cost*, Quantum 10, 2208 (2026). [DOI: 10.22331/q-2026-09-10-2208](https://doi.org/10.22331/q-2026-09-10-2208)
+[![Tests & Regression Gates](https://github.com/placeholder/sirius/actions/workflows/tests.yml/badge.svg)](https://github.com/placeholder/sirius/actions)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![DOI: 10.22331/q-2026-09-10-2208](https://img.shields.io/badge/DOI-10.22331%2Fq--2026--09--10--2208-blue.svg)](https://doi.org/10.22331/q-2026-09-10-2208)
 
-## Project objective
+---
 
-Independently implement the paper's sparse-state preparation construction, verify the reversible mapping and full logical state-preparation behavior, then benchmark its resource scaling and classical/GPU execution characteristics against a Malvetti-style baseline and the authors' reference artifact.
+## 1. What SIRIUS Is
 
-Given unique computational-basis states `x_i` and normalized coefficients `c_i`, the target is
+**SIRIUS** (*Sparse Isometry and Reversible Implementation of Unitary State Preparation*) is an independent, reproducible Python research implementation and benchmarking system for sparse quantum state preparation.
+
+It provides verified quantum circuit synthesis algorithms that prepare sparse quantum states with significantly reduced Toffoli gate overhead compared to standard sequential baselines.
+
+---
+
+## 2. Theoretical Paper Reference
+
+SIRIUS implements and validates the quantum algorithm introduced in:
+
+> **Felix Rupprecht and Sabine Wölk (2026)**  
+> *Sparse quantum state preparation with improved Toffoli cost*  
+> **Quantum 10, 2208 (2026)**  
+> **DOI:** [10.22331/q-2026-09-10-2208](https://doi.org/10.22331/q-2026-09-10-2208)  
+> **Paper URL:** [https://quantum-journal.org/papers/q-2026-09-10-2208/](https://quantum-journal.org/papers/q-2026-09-10-2208/)  
+> **Official Authors' Artifact:** Zenodo Record [18234600](https://zenodo.org/records/18234600) (Expected Archive MD5: `c58634ba415b4e3fb729648460f32ad7`)
+
+---
+
+## 3. What Problem It Solves
+
+Given an arbitrary $s$-sparse quantum state on $n$ qubits:
 
 \[
-|\psi\rangle=\sum_{i=0}^{s-1} a_i c_i|x_i\rangle,
-\qquad a_i\in\{+1,-1\}.
+|\psi\rangle = \sum_{i=0}^{s-1} a_i c_i |x_i\rangle
 \]
 
-## Implementation status
+where:
+- $\mathcal{S} = \{x_0, \dots, x_{s-1}\} \subset \{0, 1\}^n$ are distinct computational basis states.
+- $c_i \in \mathbb{C}$ are arbitrary normalized coefficients ($\sum |c_i|^2 = 1$).
+- $a_i \in \{+1, -1\}$ are independent real-sign metadata.
+- $\ell = \lceil \log_2(s) \rceil$ is the subspace register width.
+- $r = n - \ell$ is the residual register width.
 
-| Milestone | Scope | Status |
-|---|---|---|
-| Phase 1–2 | Workspace, source integrity, reference audit | Completed |
-| Phase 3 | Sparse-state model, gate IR, CPU/CuPy basis-row simulators | Completed |
-| Phase 4 | Malvetti isometry baseline | Completed |
-| Phase 5 | Restricted/unrestricted PUI tree emitter | Completed |
-| Phase 6 | Batched isometry construction | Completed |
-| Phase 7 | Algorithm 3 sign/marker handling | Completed |
-| Phase 8 | Phase synthesis and end-to-end logical state preparation | Completed |
-| Phase 9.1 | Benchmark architecture, experimental plan, data schemas, reproducibility and DGX access brief | Completed in this release |
-| Phase 9.2 | Device-local benchmark runs and result collection | Not started; intentionally local/uncommitted |
+Conventional techniques (e.g. Malvetti et al.) require $s(\ell - 1)$ Toffoli gates to compress non-subspace residual wires. Rupprecht & Wölk's batched isometry groups residual bit flips into batches of size at most $2^r$ using Partial Unary Iteration (PUI) trees, achieving substantially lower asymptotic and concrete Toffoli gate costs.
 
-## Current implementation
+---
 
-- `candidate_ai/src/sparseprep/model.py` — validated problem model.
-- `candidate_ai/src/sparseprep/malvetti_baseline.py` — isometry baseline.
-- `candidate_ai/src/sparseprep/batched_isometry.py` — independent batched construction.
-- `candidate_ai/src/sparseprep/pui_tree.py` — PUI tree emitter.
-- `candidate_ai/src/sparseprep/algorithm3.py` — signed/marker-aware construction.
-- `candidate_ai/src/sparseprep/phase_synthesis.py` — real-sign diagonal phase oracle.
-- `candidate_ai/src/sparseprep/state_preparation.py` — complete logical sparse-state preparation.
+## 4. What Is Independently Implemented
 
-Public entrypoints:
+The `sparseprep` package (`candidate_ai/src/sparseprep/`) contains a 100% clean-room, independent implementation of:
+1. **Validated Problem Model (`model.py`):** Immutable problem representation with strict distinctness, big-endian bitstrings, and coefficient validation.
+2. **Reversible Gate IR & Simulator (`gates.py`, `simulator.py`, `tableau.py`):** Explicit reversible gate models, tableaux, and exact basis-state simulation without materializing full Hilbert spaces.
+3. **Malvetti Comparator Baseline (`malvetti_baseline.py`):** Sequential isometry baseline for comparative evaluation.
+4. **PUI Interval Plans & Tree Emitter (`pui.py`, `pui_tree.py`):** Reversible restricted and unrestricted PUI tree circuit emitters with clean-ancilla uncomputation.
+5. **Batched Isometry Construction (`batched_isometry.py`):** Independent batched isometry algorithm with forward and inverse mapping verification.
+6. **Algorithm 3 Sign/Marker Model (`algorithm3.py`, `algorithms/phase_fixing.py`):** Sign- and marker-aware construction integrating real sign fixing.
+7. **Phase Synthesis (`phase_synthesis.py`):** Clean-ancilla ladder diagonal real-sign phase oracle.
+8. **End-to-End State Preparation (`state_preparation.py`):** Dense compact register loader, diagonal phase injection, inverse isometry, and marker uncomputation, verified by an exact statevector verifier (bounded by a qubit cap).
+9. **GPU Basis-Batch Simulator (`backends/cupy_simulator.py`):** Vectorized CuPy simulator transforming batches of computational basis rows encoded as `uint64`.
+
+---
+
+## 5. Development Phases & Current Status
+
+| Phase | Milestone Scope | Status | Evidence |
+|---|---|---|---|
+| **Phase 1–2** | Source integrity, hardware probe, reference audit | Completed | `research/validation/PHASE1_VALIDATION.md`, `research/maintenance/` |
+| **Phase 3** | Problem model, gate IR, CPU simulator | Completed | `candidate_ai/src/sparseprep/model.py`, `gates.py`, `simulator.py` |
+| **Phase 4** | Malvetti isometry baseline | Completed | `candidate_ai/src/sparseprep/malvetti_baseline.py` |
+| **Phase 5** | PUI tree circuit emitter | Completed | `candidate_ai/src/sparseprep/pui.py`, `pui_tree.py` |
+| **Phase 6** | Batched isometry construction | Completed | `candidate_ai/src/sparseprep/batched_isometry.py` |
+| **Phase 7** | Algorithm 3 sign- and marker-aware construction | Completed | `candidate_ai/src/sparseprep/algorithm3.py` |
+| **Phase 8** | Phase synthesis and end-to-end state preparation | Completed | `candidate_ai/src/sparseprep/state_preparation.py`, `phase_synthesis.py` |
+| **Phase 9.1** | Benchmark architecture, schemas, and plan design | Completed | `benchmarking/config/`, `benchmarking/schemas/` |
+| **Phase 9.2** | Device-local benchmark execution & modernization | **Executing** | Local runners, environment probe, analysis aggregation |
+
+---
+
+## 6. What Phase 9.2 Does
+
+Phase 9.2 turns the Phase 9.1 benchmark architecture into an executable, reproducible system:
+- **Environment Probe:** Detects sanitized hardware and runtime details (CPU, RAM, GPU, driver, CUDA, CuPy).
+- **Benchmark Runner:** Executes parameterized workloads across comparison methods with high-resolution wall-clock (`perf_counter_ns`) and CPU (`process_time_ns`) timers, peak RSS tracking, and process isolation.
+- **Statistical Aggregation:** Aggregates immutable raw JSONL records, calculating median, IQR, min, max, and 95% bootstrap confidence intervals over independent seeds.
+- **GPU Throughput Lane:** Evaluates batched basis-row transformations on CUDA devices with host-device transfer time separated from device execution.
+
+---
+
+## 7. Repository Layout
+
+```text
+SIRIUS/
+├── README.md               # Authoritative research project entrypoint
+├── LICENSE                 # Apache License Version 2.0
+├── CITATION.cff            # Citation metadata for paper and code
+├── pyproject.toml          # PEP 621 packaging and pytest configuration
+├── .gitignore              # Git hygiene excluding caches, venvs, local telemetry
+├── .python-version         # Pinned Python version (3.12)
+│
+├── candidate_ai/           # Independent implementation
+│   ├── src/sparseprep/     # Core quantum package
+│   │   ├── __init__.py     # Public API exports
+│   │   ├── model.py        # Validated sparse problem model
+│   │   ├── gates.py        # Reversible gate IR
+│   │   ├── simulator.py    # CPU basis simulator
+│   │   ├── tableau.py      # Tableau tracking
+│   │   ├── resources.py    # Resource accounting
+│   │   ├── pui.py          # PUI interval cost models
+│   │   ├── pui_tree.py     # Reversible PUI tree circuit emitter
+│   │   ├── malvetti_baseline.py # Malvetti baseline
+│   │   ├── batched_isometry.py  # Independent batched isometry
+│   │   ├── algorithm3.py   # Algorithm 3 sign/marker handling
+│   │   ├── phase_synthesis.py   # Real-sign phase oracle
+│   │   ├── state_preparation.py # End-to-end logical state preparation
+│   │   ├── support_generators.py # Deterministic workload generators
+│   │   ├── algorithms/     # Phase fixing and signed tableaux
+│   │   └── backends/       # CuPy uint64 batch simulator
+│   └── tests/              # 150 algorithm regression tests
+│
+├── benchmarking/           # Benchmark infrastructure
+│   ├── config/             # Phase 9.1 benchmark plan (JSON)
+│   ├── schemas/            # JSON Schemas for records, manifests, summaries
+│   ├── templates/          # Record templates
+│   ├── runners/            # Phase 9.2 runners and environment probe
+│   ├── analysis/           # Statistical aggregation and plotting
+│   └── results/            # Benchmark outputs (uncommitted)
+│
+├── docs/                   # Structured technical documentation
+│   ├── architecture/       # Architecture and overview
+│   ├── methodology/        # Mathematical implementation guide
+│   ├── benchmarking/       # Phase 9.1 design & Phase 9.2 protocol
+│   └── development/        # Developer setup and instructions
+│
+├── reference/              # Reference material
+│   ├── authors-artifact/   # Verified Zenodo ZIP and extracted source
+│   └── sources/            # Original paper PDF and guides
+│
+├── research/               # Research records & archive
+│   ├── decisions/          # Architectural decisions log
+│   ├── maintenance/        # Audit reports and source manifests
+│   ├── validation/         # Historical milestone validation records
+│   └── archive/phases/     # Historical phase sprint checklists & readmes
+│
+├── scripts/                # Helper utilities and plan validators
+└── tests/                  # Root integration and probe tests
+```
+
+---
+
+## 8. Installation
+
+### Quick Start (Editable Install)
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install -e ".[dev]"
+```
+
+### Optional GPU Installation
+For GPU basis-row batch throughput testing (requires NVIDIA GPU with CUDA driver):
+```bash
+# E.g. for CUDA 13.x
+pip install cupy-cuda13x
+```
+
+---
+
+## 9. Running Tests
+
+Run the complete regression suite (159 tests):
+```bash
+pytest
+```
+
+Run candidate algorithm tests specifically:
+```bash
+pytest candidate_ai/tests -v
+```
+
+All tests run on CPU by default. Optional CuPy tests automatically detect CUDA availability and run only when hardware/libraries are present.
+
+---
+
+## 10. Running Benchmarks
+
+### 10.1 Validate Benchmark Plan (Dry Run)
+```bash
+python scripts/phase9_1_validate.py --plan benchmarking/config/phase9_1_benchmark_plan.json
+```
+
+### 10.2 Run Phase 9.2 Smoke Benchmark
+```bash
+# CPU comparators on smoke tier
+python -m benchmarking.runners.run_benchmarks \
+  --tier smoke \
+  --methods independent_batched_isometry malvetti_baseline \
+  --output results/raw
+
+# Aggregate raw results
+python -m benchmarking.analysis.aggregate \
+  --input results/raw \
+  --output results/summaries/smoke_summary.json
+```
+
+---
+
+## 11. GPU Backend Boundaries
+
+The CuPy backend (`sparseprep.backends.cupy_simulator`) simulates batches of computational-basis rows represented as `uint64` integers ($1 \le n \le 63$).
+- **What it is:** High-throughput classical verification of basis-state permutations over large batches of input words.
+- **What it is NOT:** It is NOT a complex-amplitude statevector simulator. It does NOT implement circuit compilation on GPU. It does NOT distribute a statevector across multiple GPUs.
+- All GPU measurements report transfer and device times separately and are labeled `gpu_basis_batch`.
+
+---
+
+## 12. What Is Not Yet Implemented
+
+1. **Hardware-Native Transpilation:** Circuit outputs are logical reversible gate IR (`CMX`, `CX`, `MCX`, `Toffoli`). Physical hardware gate counts (e.g. Clifford+T, native 2-qubit gates, physical depth) require transpilation to a concrete hardware basis.
+2. **Authors' Reference Artifact Common Adapter:** The authors' reference implementation relies on Qualtran Bloqs and a Rust extension (`_isometry_algorithms`). It is maintained in `reference/` and documented in `research/maintenance/`; direct differential benchmarks are blocked until a version-pinned adapter is completed.
+
+---
+
+## 13. Reproducibility & Public API Contract
+
+The public import API is guaranteed:
 
 ```python
 from sparseprep import (
@@ -51,45 +238,38 @@ from sparseprep import (
 )
 ```
 
-## Validation
+### Example Usage:
+```python
+from sparseprep import SparseStateProblem, prepare_sparse_state
 
-Use the project's existing virtual environment:
+# 4-qubit, 3-sparse target state
+problem = SparseStateProblem(
+    n=4,
+    support=("0001", "0110", "1011"),
+    coefficients=(1 / 3**0.5, 1j / 3**0.5, -1 / 3**0.5),
+    signs=(1, -1, 1),
+)
 
-```bash
-PYTHONPATH=candidate_ai/src .venv/bin/python -m pytest candidate_ai/tests -q
+circuit, metrics = prepare_sparse_state(problem)
+print("Fidelity:", metrics.fidelity)
+print("Resources:", circuit.resources)
 ```
 
-Latest operator-reported Phase 8.2 regression: **148 passed, 2 skipped**. The two skips were optional CUDA tests unavailable in that Python environment. This is a correctness-test result, not a benchmark result.
+---
 
-## Benchmark design (Phase 9.1)
+## 14. Citation
 
-Dean-facing access brief: [`docs/PHASE9_1_DGX_ACCESS_BRIEF.pdf`](docs/PHASE9_1_DGX_ACCESS_BRIEF.pdf) (print-ready) and [`docs/PHASE9_1_DGX_ACCESS_BRIEF.md`](docs/PHASE9_1_DGX_ACCESS_BRIEF.md).
+If you use this software, please cite both the paper and this implementation:
 
-The committed `benchmarking/` directory defines a reproducible plan, metrics catalog, run/machine/summary schemas and templates. It separates:
-
-1. CPU construction time and peak memory;
-2. logical Toffoli/ancilla/gate resources;
-3. correctness and bounded exact statevector validation;
-4. optional GPU throughput for batches of computational-basis rows.
-
-Validate and enumerate the proposed workloads without executing any algorithm:
-
-```bash
-python scripts/phase9_1_validate.py --plan benchmarking/config/phase9_1_benchmark_plan.json
-python scripts/phase9_1_validate.py --plan benchmarking/config/phase9_1_benchmark_plan.json --tier smoke --emit-manifest /tmp/sparseprep-smoke-plan.json
+```bibtex
+@article{rupprecht2026sparse,
+  author    = {Rupprecht, Felix and W{\"o}lk, Sabine},
+  title     = {Sparse quantum state preparation with improved Toffoli cost},
+  journal   = {Quantum},
+  volume    = {10},
+  pages     = {2208},
+  year      = {2026},
+  doi       = {10.22331/q-2026-09-10-2208},
+  url       = {https://quantum-journal.org/papers/q-2026-09-10-2208/}
+}
 ```
-
-## GPU boundary — read before making claims
-
-The current CuPy backend is a uint64 **basis-state row batch** simulator for 1–63 data wires. It is not a complex-amplitude statevector simulator. Phase 8's exact complex statevector verifier is CPU-side and capped. The current implementation does not pool GPU memory or distribute one statevector across multiple GPUs. Classical isometry construction remains CPU-side. GPU speedup claims are allowed only for the GPU-executed basis-row batch lane, with transfer time separated.
-
-## Phase 9.2
-
-Phase 9.2 is the device-local execution stage: hardware probes, environment setup, authors' artifact adapter, controlled runs on each available machine, raw JSON records, summary plots and comparison analysis. Keep machine manifests, raw results, temporary virtual environments and device-specific configuration local/uncommitted. Do not commit benchmark results until provenance and review are complete.
-
-## Research sources
-
-- Paper: https://quantum-journal.org/papers/q-2026-09-10-2208/
-- DOI: https://doi.org/10.22331/q-2026-09-10-2208
-- Authors' code and assets: https://zenodo.org/records/18234600
-- Expected authors' artifact MD5: `c58634ba415b4e3fb729648460f32ad7`

@@ -6,35 +6,59 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
-.venv/
-venv/
-.env
+*.egg-info/
 
-# Build and local environments
+# Virtual environments, including nested environments
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+
+# Build output
 build/
 dist/
-*.egg-info/
-.cargo/
 target/
+**/target/
+.cargo/
+**/.cargo/
 
-# Local telemetry may contain machine-specific details; commit only reviewed reports
-results/raw/*.jsonl
-results/raw/*.json
-results/raw/*.txt
-!results/raw/README.md
-environment/laptop-hardware.json
-
-# Handoff bundles/snapshots are generated artifacts
-handoff/*.bundle
-handoff/*.tar.gz
-handoff/*.zip
-
-# Editors/OS
+# Editors and operating system
 .vscode/
 .idea/
 .DS_Store
 *.swp
 
+# Secrets
+.env
+.env.*
+
+# Local machine manifests
+environment/local-*.json
+environment/*-hardware.json
 environment/agent-probe.json
+
+# Raw local benchmark results (preserving historical phase2 logs and READMEs)
+results/raw/*.jsonl
+results/raw/*.json
+results/raw/*.txt
+!results/raw/README.md
+!results/raw/.gitkeep
+!results/raw/phase2/**
+results/summaries/*.json
+!results/summaries/README.md
+!results/summaries/.gitkeep
+
+# Local benchmark outputs
+benchmarking/results/*
+!benchmarking/results/README.md
+!benchmarking/results/.gitkeep
+
+# Handoff bundles/snapshots are generated artifacts
 handoff/*
 !handoff/README.md
+
+# Temporary benchmark artifacts
+*.prof
+*.coverage.*

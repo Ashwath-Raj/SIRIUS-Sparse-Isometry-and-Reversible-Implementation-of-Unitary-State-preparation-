@@ -49,4 +49,4 @@ This only validates and enumerates planned jobs. It does not import or call any 
 8. Emit one immutable raw record per attempted workload, including failures/timeouts/skips.
 9. Validate records against the schema before aggregation.
 
-See `docs/PHASE9_1_BENCHMARK_SYSTEM_DESIGN.md` and `docs/PHASE9_1_REPRODUCIBILITY_PROTOCOL.md`.
+See `docs/benchmarking/PHASE9_1_BENCHMARK_SYSTEM_DESIGN.md` and `docs/benchmarking/PHASE9_1_REPRODUCIBILITY_PROTOCOL.md`.
