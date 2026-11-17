@@ -1,0 +1,56 @@
+{
+  "coefficient_family": null,
+  "correctness_status": "passed",
+  "correctness_verification_seconds": 0.0001950999994733138,
+  "cpu_median_ms": 0.0,
+  "cpu_samples_ms": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "method": "independent_batched_isometry",
+  "n": 48,
+  "peak_rss_bytes": 30945280,
+  "repetitions": 5,
+  "resources": {
+    "clean_ancillas": 7,
+    "coherent_toffoli": 0,
+    "emitted_toffoli_ir": 0,
+    "gate_count": 0,
+    "gate_histogram": {
+      "cmx_macros": 0,
+      "cx": 0,
+      "decomposed_toffoli": null,
+      "mcx_macros": 0,
+      "negative_control_toffoli": 0,
+      "restricted_pui_macros": 0,
+      "swap": 0,
+      "toffoli": 0,
+      "unrestricted_pui_macros": 0,
+      "x": 0
+    },
+    "logical_ir_depth": 0,
+    "logical_qubits": 55,
+    "max_clean_ancillas_used": 0,
+    "paper_accounted_toffoli": 0,
+    "resource_scope": "isometry; symbolic logical IR depth"
+  },
+  "s": 255,
+  "seed": 101,
+  "sign_profile": null,
+  "status": "completed",
+  "support_family": "zero_residual_subspace",
+  "support_sha256": "b44b4446bbf6f9582e46a42d526bf99a2d35969eae71c79e460272c41752964a",
+  "wall_iqr_ms": 0.004750000000000004,
+  "wall_median_ms": 0.0855,
+  "wall_samples_ms": [
+    0.0887,
+    0.0855,
+    0.0846,
+    0.0874,
+    0.082
+  ],
+  "warmups": 2
+}

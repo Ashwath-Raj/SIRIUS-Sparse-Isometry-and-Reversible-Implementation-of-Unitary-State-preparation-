@@ -1,0 +1,9 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.2.0, pluggy-1.7.0
+rootdir: <SIRIUS_REPOSITORY_ROOT>
+configfile: pyproject.toml
+collected 2 items
+
+candidate_ai\tests\test_cupy_parity.py ..                                [100%]
+
+============================== 2 passed in 0.44s ==============================

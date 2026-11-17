@@ -1,0 +1,25 @@
+{
+  "patched": [
+    {
+      "already_patched": false,
+      "path": "candidate_ai/src/sparseprep/batched_isometry.py",
+      "repaired_or_wrapped_sites": 3,
+      "verify_sites": 3
+    },
+    {
+      "already_patched": false,
+      "path": "candidate_ai/src/sparseprep/malvetti_baseline.py",
+      "repaired_or_wrapped_sites": 2,
+      "verify_sites": 2
+    },
+    {
+      "already_patched": true,
+      "path": "candidate_ai/src/sparseprep/algorithm3.py",
+      "repaired_or_wrapped_sites": 2,
+      "verify_sites": 2
+    }
+  ],
+  "regression_test": "candidate_ai/tests/test_benchmark_verification_toggle.py",
+  "repaired_previous_runner_indentation": true,
+  "status": "PASS"
+}

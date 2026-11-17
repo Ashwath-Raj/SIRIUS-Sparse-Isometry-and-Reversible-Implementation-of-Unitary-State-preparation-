@@ -1,0 +1,57 @@
+{
+  "coefficient_family": null,
+  "correctness_status": "passed",
+  "correctness_verification_seconds": 2.3013002000006963,
+  "cpu_median_ms": 1265.625,
+  "cpu_samples_ms": [
+    1250.0,
+    1218.75,
+    1265.625,
+    1265.625,
+    1281.25
+  ],
+  "method": "algorithm3",
+  "n": 48,
+  "peak_rss_bytes": 31539200,
+  "repetitions": 5,
+  "resources": {
+    "clean_ancillas": 7,
+    "coherent_toffoli": 560,
+    "emitted_toffoli_ir": 560,
+    "gate_count": 1661,
+    "gate_histogram": {
+      "cmx_macros": 66,
+      "cx": 1005,
+      "decomposed_toffoli": null,
+      "mcx_macros": 0,
+      "negative_control_toffoli": 516,
+      "restricted_pui_macros": 0,
+      "swap": 30,
+      "toffoli": 44,
+      "unrestricted_pui_macros": 0,
+      "x": 0
+    },
+    "logical_ir_depth": 1575,
+    "logical_qubits": 56,
+    "marker_qubits": 1,
+    "max_clean_ancillas_used": 7,
+    "paper_accounted_toffoli": 296,
+    "resource_scope": "Algorithm 3 isometry/sign-marker; logical IR depth"
+  },
+  "s": 255,
+  "seed": 211,
+  "sign_profile": "random_pm_one",
+  "status": "completed",
+  "support_family": "zero_residual_subspace",
+  "support_sha256": "5b1765a3b9f2609df6e19f54750945bed75825691e6b593b8679c1dd095257ca",
+  "wall_iqr_ms": 35.21785,
+  "wall_median_ms": 1264.3746,
+  "wall_samples_ms": [
+    1246.0593,
+    1221.606,
+    1264.3746,
+    1272.0384,
+    1266.0626
+  ],
+  "warmups": 2
+}

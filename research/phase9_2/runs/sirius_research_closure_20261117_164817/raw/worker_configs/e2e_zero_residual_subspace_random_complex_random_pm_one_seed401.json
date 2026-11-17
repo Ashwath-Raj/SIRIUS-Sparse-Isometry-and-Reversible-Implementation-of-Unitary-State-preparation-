@@ -1,0 +1,69 @@
+{
+  "coefficient_family": "random_complex",
+  "coefficients": [
+    [
+      0.13569943807698115,
+      -0.18147048041495104
+    ],
+    [
+      0.48957804235935226,
+      0.1542583048363725
+    ],
+    [
+      -0.1389865083319907,
+      -0.4457953590311897
+    ],
+    [
+      -0.16518770414009645,
+      0.4584634614182056
+    ],
+    [
+      -0.2130467701811663,
+      -0.20885991748279675
+    ],
+    [
+      -0.0022024805625011235,
+      0.2287817435885127
+    ],
+    [
+      0.277384194901349,
+      -0.023207606790227753
+    ],
+    [
+      -0.0637437846530369,
+      0.08212298809699657
+    ]
+  ],
+  "kind": "cpu",
+  "method": "end_to_end_state_preparation",
+  "n": 8,
+  "output": "A:\\SQsp\\SIRIUS\\benchmarking\\local-runs\\sirius_research_closure_20261117_164817\\worker_results\\e2e_zero_residual_subspace_random_complex_random_pm_one_seed401.json",
+  "repetitions": 5,
+  "repo": ".",
+  "s": 8,
+  "seed": 401,
+  "sign_profile": "random_pm_one",
+  "signs": [
+    -1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    -1
+  ],
+  "statevector_cap": 20,
+  "support": [
+    "00000000",
+    "00100000",
+    "01000000",
+    "01100000",
+    "10000000",
+    "10100000",
+    "11000000",
+    "11100000"
+  ],
+  "support_family": "zero_residual_subspace",
+  "warmups": 1
+}

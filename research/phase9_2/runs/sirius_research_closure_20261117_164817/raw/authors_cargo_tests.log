@@ -1,0 +1,99 @@
+
+running 30 tests
+test isometry_algorithms::column::tests::test_build_final_block_mask ... ok
+test isometry_algorithms::column::tests::test_apply_final_block_mask ... ok
+test isometry_algorithms::column::tests::test_bool_iter_basic_pattern ... ok
+test isometry_algorithms::column::tests::test_cx_gate ... ok
+test isometry_algorithms::column::tests::test_find_non_zero_element_exclude_row ... ok
+test isometry_algorithms::column::tests::test_find_non_zero_element ... ok
+test isometry_algorithms::gates::tests::multiple_mixed_controls ... ok
+test isometry_algorithms::gates::tests::bitvec_bit_mask_full_range ... ok
+test isometry_algorithms::gates::tests::bitvec_from_and_into_iter ... ok
+test isometry_algorithms::column::tests::test_get_and_set_bits ... ok
+test isometry_algorithms::column::tests::test_to_column ... ok
+test isometry_algorithms::column::tests::test_toffoli ... ok
+test isometry_algorithms::gates::tests::bitvec_new_ok ... ok
+test isometry_algorithms::gates::tests::bitvec_bit_mask_basic ... ok
+test isometry_algorithms::gates::tests::bitvec_new_bits_out_of_range - should panic ... ok
+test isometry_algorithms::problem::tests::missing_and_complete_bijection_work ... ok
+test isometry_algorithms::problem::tests::test_double_end_element ... ok
+test isometry_algorithms::problem::tests::test_find_bad_next_non_zero_element_and_create_column ... ok
+test isometry_algorithms::problem::tests::test_find_extra_col_next_non_zero_element_and_create_column ... ok
+test isometry_algorithms::problem::tests::test_good_element ... ok
+test isometry_algorithms::problem::tests::test_run_with_signs ... ok
+test isometry_algorithms::problem::tests::test_run_without_signs ... ok
+test isometry_algorithms::column::tests::test_find_non_zero_element_exclude_row_list ... ok
+test isometry_algorithms::tableau::tests::test_decompose_and_recompose_roundtrip ... ok
+test isometry_algorithms::tableau::tests::test_pui_1 ... ok
+test isometry_algorithms::tableau::tests::test_pui_0 ... ok
+test isometry_algorithms::tableau::tests::test_toffoli_and_cx_tableau ... ok
+test isometry_algorithms::tableau::tests::test_extra_cx ... ok
+test isometry_algorithms::tableau::tests::test_pui_sign_extra ... ok
+test isometry_algorithms::problem::tests::test_run_via_subproblems ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+[stderr]
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded heck v0.5.0
+  Downloaded num-complex v0.4.6
+  Downloaded pyo3-macros v0.27.2
+  Downloaded memoffset v0.9.1
+  Downloaded rawpointer v0.2.1
+  Downloaded unindent v0.2.4
+  Downloaded bytemuck v1.24.0
+  Downloaded rustc-hash v2.1.1
+  Downloaded autocfg v1.5.0
+  Downloaded indoc v2.0.7
+  Downloaded num-integer v0.1.46
+  Downloaded rustversion v1.0.22
+  Downloaded target-lexicon v0.13.4
+  Downloaded once_cell v1.21.3
+  Downloaded quote v1.0.43
+  Downloaded pyo3-build-config v0.27.2
+  Downloaded num-traits v0.2.19
+  Downloaded proc-macro2 v1.0.105
+  Downloaded unicode-ident v1.0.22
+  Downloaded matrixmultiply v0.3.10
+  Downloaded pyo3-macros-backend v0.27.2
+  Downloaded pyo3-ffi v0.27.2
+  Downloaded ndarray v0.17.2
+  Downloaded syn v2.0.114
+  Downloaded libc v0.2.180
+  Downloaded pyo3 v0.27.2
+  Downloaded numpy v0.27.1
+  Downloaded safe_arch v1.0.0
+  Downloaded wide v1.1.1
+   Compiling target-lexicon v0.13.4
+   Compiling autocfg v1.5.0
+   Compiling proc-macro2 v1.0.105
+   Compiling unicode-ident v1.0.22
+   Compiling quote v1.0.43
+   Compiling libc v0.2.180
+   Compiling heck v0.5.0
+   Compiling rawpointer v0.2.1
+   Compiling indoc v2.0.7
+   Compiling once_cell v1.21.3
+   Compiling unindent v0.2.4
+   Compiling bytemuck v1.24.0
+   Compiling rustc-hash v2.1.1
+   Compiling safe_arch v1.0.0
+   Compiling num-traits v0.2.19
+   Compiling matrixmultiply v0.3.10
+   Compiling memoffset v0.9.1
+   Compiling wide v1.1.1
+   Compiling pyo3-build-config v0.27.2
+   Compiling syn v2.0.114
+   Compiling num-complex v0.4.6
+   Compiling num-integer v0.1.46
+   Compiling ndarray v0.17.2
+   Compiling pyo3-macros-backend v0.27.2
+   Compiling pyo3-ffi v0.27.2
+   Compiling pyo3 v0.27.2
+   Compiling numpy v0.27.1
+   Compiling pyo3-macros v0.27.2
+   Compiling sparse_state_preparation v0.1.0 (<SIRIUS_REPOSITORY_ROOT>\reference\authors-artifact\source\Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.18s
+     Running unittests src\lib.rs (target\debug\build\sparse_state_preparation/dee16896bdda95b6\out\_isometry_algorithms-dee16896bdda95b6.exe)

@@ -1,0 +1,41 @@
+{
+  "architecture": "AMD64",
+  "captured_at_utc": "2026-11-17T11:18:17.807113Z",
+  "cpu_model": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "git_branch": "cleanup/phase9-2-modernization",
+  "git_commit": "e90449ea7c4751ed125aad88fef8d2f142086dc6",
+  "git_dirty_at_start": true,
+  "git_dirty_paths_at_start": [
+    "benchmarking/adapters/authors_adapter.py",
+    "benchmarking/runners/run_benchmarks.py",
+    "candidate_ai/src/sparseprep/algorithm3.py",
+    "candidate_ai/src/sparseprep/state_preparation.py",
+    "candidate_ai/tests/test_benchmark_verification_toggle.py",
+    "results/gpu_readiness/",
+    "results/raw/windows_5060ti_smoke/",
+    "results/reports/"
+  ],
+  "gpu": "NVIDIA GeForce RTX 5060 Ti, 16311, 610.60",
+  "gpu_runtime": {
+    "cuda_runtime": "13.2",
+    "cupy": "14.2.0",
+    "device": "NVIDIA GeForce RTX 5060 Ti",
+    "kernel": "PASS"
+  },
+  "logical_cpu_count": 16,
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "ram_total_bytes": 67837333504,
+  "recognized_prior_closure_changes": [
+    "benchmarking/adapters/authors_adapter.py",
+    "benchmarking/runners/run_benchmarks.py",
+    "candidate_ai/src/sparseprep/algorithm3.py",
+    "candidate_ai/src/sparseprep/state_preparation.py",
+    "candidate_ai/tests/test_benchmark_verification_toggle.py"
+  ],
+  "windows_runner_compatibility_patch": {
+    "path": "benchmarking/runners/run_benchmarks.py",
+    "sha256": "8e2083d3b88e4d91153f1ba50448b8bb519773f7b2977f4858d4bdb5d65fa7e0",
+    "status": "PASS"
+  }
+}

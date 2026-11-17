@@ -1,0 +1,30 @@
+{
+  "kind": "cpu",
+  "method": "independent_batched_isometry",
+  "n": 16,
+  "output": "A:\\SQsp\\SIRIUS\\benchmarking\\local-runs\\sirius_research_closure_20261117_164817\\worker_results\\cpu_independent_batched_isometry_seeded_random_n16_s16_seed401.json",
+  "repetitions": 5,
+  "repo": ".",
+  "s": 16,
+  "seed": 401,
+  "support": [
+    "0001100111110000",
+    "0010111111110011",
+    "0100011110110011",
+    "0100111011010100",
+    "0101000111000111",
+    "0110010001110010",
+    "0110110101111100",
+    "0111101101100101",
+    "0111111101101000",
+    "1001001000000101",
+    "1100101100111010",
+    "1100101101110001",
+    "1101001010001100",
+    "1101001011100111",
+    "1111001010011010",
+    "1111010000100111"
+  ],
+  "support_family": "seeded_random",
+  "warmups": 2
+}

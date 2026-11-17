@@ -1,0 +1,94 @@
+{
+  "authors_build": {
+    "actual_md5": "c58634ba415b4e3fb729648460f32ad7",
+    "cargo_tests": "PASS",
+    "reason": "Maturin was installed but its executable could not be located.",
+    "status": "BLOCKED"
+  },
+  "counts": {
+    "authors_completed": 0,
+    "authors_cost_equal": 0,
+    "authors_total": 150,
+    "cpu_completed": 300,
+    "cpu_total": 300,
+    "e2e_completed": 90,
+    "e2e_total": 90,
+    "gpu_completed": 90,
+    "gpu_total": 90,
+    "statevector_failed": 0,
+    "statevector_passed": 90
+  },
+  "finished_at_utc": "2026-11-17T11:56:16.772534Z",
+  "full_tests": {
+    "duration_seconds": 7.0,
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  "gates": {
+    "authors_artifact_checksum_match": true,
+    "authors_differential_all_costs_match": false,
+    "authors_extension_build_and_import_smoke": false,
+    "authors_rust_unit_tests_pass": true,
+    "cpu_scaling_matrix_complete": true,
+    "cuda_probe_pass": true,
+    "distribution_package_verified": true,
+    "end_to_end_resource_accounting_complete": true,
+    "end_to_end_statevector_all_pass": true,
+    "gpu_basis_row_matrix_complete": true,
+    "resource_accounting_complete": true,
+    "test_suites_pass": true,
+    "timing_separates_synthesis_from_final_verification": true,
+    "windows_runner_portable_peak_memory": true
+  },
+  "gpu_parity": {
+    "duration_seconds": 0.73,
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  "gpu_probe": {
+    "duration_seconds": 0.48,
+    "exit_code": 0,
+    "status": "PASS",
+    "stdout": "{\"cupy\": \"14.2.0\", \"device\": \"NVIDIA GeForce RTX 5060 Ti\", \"cuda_runtime\": \"13.2\", \"kernel\": \"PASS\"}\n"
+  },
+  "local_release": {
+    "reason": "One or more research/distribution gates are open, or repository was dirty at startup.",
+    "status": "NOT_CREATED"
+  },
+  "package": {
+    "archive": "A:\\SQsp\\SIRIUS\\dist\\SIRIUS_PHASE9_2_READY.zip",
+    "archive_exists": true,
+    "checksum_exists": true,
+    "exit_code": 0,
+    "log": "package_build.log",
+    "status": "PASS"
+  },
+  "release_ready": false,
+  "runner_version": "1.0.1",
+  "started_at_utc": "2026-11-17T11:18:41.355586Z",
+  "timing_verification_patch": {
+    "patched": [
+      {
+        "already_patched": false,
+        "path": "candidate_ai/src/sparseprep/batched_isometry.py",
+        "repaired_or_wrapped_sites": 3,
+        "verify_sites": 3
+      },
+      {
+        "already_patched": false,
+        "path": "candidate_ai/src/sparseprep/malvetti_baseline.py",
+        "repaired_or_wrapped_sites": 2,
+        "verify_sites": 2
+      },
+      {
+        "already_patched": true,
+        "path": "candidate_ai/src/sparseprep/algorithm3.py",
+        "repaired_or_wrapped_sites": 2,
+        "verify_sites": 2
+      }
+    ],
+    "regression_test": "candidate_ai/tests/test_benchmark_verification_toggle.py",
+    "repaired_previous_runner_indentation": true,
+    "status": "PASS"
+  }
+}

@@ -1,0 +1,9 @@
+Archive created: <SIRIUS_REPOSITORY_ROOT>\dist\SIRIUS_PHASE9_2_READY.zip (304 files)
+SHA-256 Checksum: bca8ca22628941a5bcbacf4d189123adc7cca48fba8e04ab2a44100df2601503
+Wrote checksum file: <SIRIUS_REPOSITORY_ROOT>\dist\SIRIUS_PHASE9_2_READY.zip.sha256
+
+--- Verifying Archive Integrity in Clean Temporary Directory ---
+Successfully extracted SIRIUS_PHASE9_2_READY.zip to <USER_HOME>\AppData\Local\Temp\tmplqqfrz9g\SIRIUS
+Clean extract import: PASS
+Clean extract plan validation: PASS
+Archive integrity verification: ALL CHECKS PASSED!

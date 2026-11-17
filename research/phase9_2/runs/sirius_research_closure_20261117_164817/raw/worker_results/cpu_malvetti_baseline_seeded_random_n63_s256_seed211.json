@@ -1,0 +1,57 @@
+{
+  "coefficient_family": null,
+  "correctness_status": "passed",
+  "correctness_verification_seconds": 10.420198899999377,
+  "cpu_median_ms": 5406.25,
+  "cpu_samples_ms": [
+    5453.125,
+    5390.625,
+    5375.0,
+    5484.375,
+    5406.25
+  ],
+  "method": "malvetti_baseline",
+  "n": 63,
+  "peak_rss_bytes": 32509952,
+  "repetitions": 5,
+  "resources": {
+    "clean_ancillas": 6,
+    "coherent_toffoli": 3328,
+    "emitted_toffoli_ir": 0,
+    "gate_count": 7647,
+    "gate_histogram": {
+      "cmx_macros": 0,
+      "cx": 7391,
+      "decomposed_toffoli": null,
+      "mcx_macros": 256,
+      "negative_control_toffoli": 0,
+      "restricted_pui_macros": 0,
+      "swap": 0,
+      "toffoli": 0,
+      "unrestricted_pui_macros": 0,
+      "x": 0
+    },
+    "logical_ir_depth": 6706,
+    "logical_qubits": 69,
+    "max_clean_ancillas_used": 6,
+    "paper_accounted_toffoli": 1792,
+    "resource_scope": "isometry; MCX treated as one symbolic IR operation for depth",
+    "worst_case_paper_toffoli": 1792
+  },
+  "s": 256,
+  "seed": 211,
+  "sign_profile": null,
+  "status": "completed",
+  "support_family": "seeded_random",
+  "support_sha256": "c63fef3ca5d9d5869bed26fc9c00edc9233e800a902c88cb5623f05622f03f87",
+  "wall_iqr_ms": 87.88159999999971,
+  "wall_median_ms": 5421.3852,
+  "wall_samples_ms": [
+    5457.4062,
+    5409.188,
+    5368.6767,
+    5496.2217,
+    5421.3852
+  ],
+  "warmups": 2
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "exists": true,
+    "path": "README.md",
+    "sha256": "6f7f1610d2d238d6bf05f94ab1aa8f0d817da5dc7018099f7a5e4a988a1f53f3"
+  },
+  {
+    "exists": true,
+    "path": "benchmarking/adapters/authors_adapter.py",
+    "sha256": "118722e317458dffd8a67c7f539f6631d70cef6030317eed0ae61e46d1db1f83"
+  },
+  {
+    "exists": true,
+    "path": "benchmarking/runners/run_benchmarks.py",
+    "sha256": "8e2083d3b88e4d91153f1ba50448b8bb519773f7b2977f4858d4bdb5d65fa7e0"
+  },
+  {
+    "exists": true,
+    "path": "candidate_ai/src/sparseprep/algorithm3.py",
+    "sha256": "dce2832099318100ea140fb5cd262cefe525ea5cb3016b509620857eb04a71a3"
+  },
+  {
+    "exists": true,
+    "path": "candidate_ai/src/sparseprep/backends/cupy_simulator.py",
+    "sha256": "a13ebebcfeacc102a95d1ea7a847b30593d842aa0a49edd8b4cdea5ec11ea015"
+  },
+  {
+    "exists": true,
+    "path": "candidate_ai/src/sparseprep/batched_isometry.py",
+    "sha256": "2e69ac2e7d156538e6d6b03ff4e229fa3c0153c7827f4b1d8570dbc66aab3cc6"
+  },
+  {
+    "exists": true,
+    "path": "candidate_ai/src/sparseprep/malvetti_baseline.py",
+    "sha256": "c52af1426ea84d376288133212d23e37a7b79ff8722644db884961ad9345cb77"
+  },
+  {
+    "exists": true,
+    "path": "candidate_ai/src/sparseprep/state_preparation.py",
+    "sha256": "9166895ced70f92e138ade326a0bb4fe56bffbb5e44a0b44d005ac24084f461a"
+  },
+  {
+    "exists": true,
+    "path": "candidate_ai/tests/test_benchmark_verification_toggle.py",
+    "sha256": "6429ae35b7638ff81c8dc1cc76f619d32995125afa9ac61b9b77cf3ce7fb5237"
+  },
+  {
+    "exists": true,
+    "path": "docs/benchmarking/AUTHORS_ARTIFACT_ADAPTER_STATUS.md",
+    "sha256": "0f68b5f1df8e54200e8719b4b3eb022be3542897aaa1081c733cde8d145c7202"
+  },
+  {
+    "exists": true,
+    "path": "docs/benchmarking/PHASE9_2_RESEARCH_CLOSURE.md",
+    "sha256": "899acf30cc916fbea63ff70dd6fa90b3af81537d9c549842ca309ab3438306c3"
+  },
+  {
+    "exists": true,
+    "path": "pyproject.toml",
+    "sha256": "6a7610a0f97763cab63e91719672841b27c00d5a730eb1a744a870ae2369562a"
+  },
+  {
+    "exists": true,
+    "path": "reference/authors-artifact/official-artifact.zip",
+    "sha256": "4aa9ccdf5a4ae25f389e93dc8c9d7cada71f404f6a64d243038f374da81f6456"
+  },
+  {
+    "exists": true,
+    "path": "reference/authors-artifact/source/Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost/Cargo.lock",
+    "sha256": "b80aa6d52cf1808d1285dca8a7da45224ee01ba193f385cda1d5cc093398040e"
+  },
+  {
+    "exists": true,
+    "path": "reference/authors-artifact/source/Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost/Cargo.toml",
+    "sha256": "e69a1ca6300e18e2f3a8b5997a4c5fffe29eb659b59864f3a41fea4e0e92eee7"
+  },
+  {
+    "exists": true,
+    "path": "reference/authors-artifact/source/Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost/src/isometry_algorithms/problem.rs",
+    "sha256": "316fce5a7f293acff3cc7e056d2400de770ba58f854570b68cb6702b4f72dc43"
+  },
+  {
+    "exists": true,
+    "path": "reference/authors-artifact/source/Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost/src/isometry_algorithms/tableau.rs",
+    "sha256": "be573ee55a7d64a4a79d0b0a630a002a9aea5eabe4bd081d6f000af7cbc93952"
+  },
+  {
+    "exists": true,
+    "path": "reference/authors-artifact/source/Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost/src/lib.rs",
+    "sha256": "3320d70955fa0af8ca2522293916a6a50685a31e33958db3448aa32d0982f1a1"
+  },
+  {
+    "exists": true,
+    "path": "scripts/package_phase9_2.py",
+    "sha256": "edcfafda936e83235fd9f502fcab3770f1e2fb9c6423a0f0c62c56976e2a2e3e"
+  },
+  {
+    "exists": true,
+    "path": "scripts/research_closure_one_shot.py",
+    "sha256": "57c1680c9c92d3d7cf9ab19bbd8425cbc314ab85c4e503c23dac6d3d5a417d81"
+  }
+]

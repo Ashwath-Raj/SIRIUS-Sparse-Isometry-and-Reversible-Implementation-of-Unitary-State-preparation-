@@ -1,0 +1,69 @@
+{
+  "coefficient_family": "random_real_positive",
+  "coefficients": [
+    [
+      0.20583141824783288,
+      0.0
+    ],
+    [
+      0.4057104051180899,
+      0.0
+    ],
+    [
+      0.11651989591224195,
+      0.0
+    ],
+    [
+      0.1852290099598712,
+      0.0
+    ],
+    [
+      0.5296932376302492,
+      0.0
+    ],
+    [
+      0.5065508299374962,
+      0.0
+    ],
+    [
+      0.25874937727490843,
+      0.0
+    ],
+    [
+      0.37553416971715464,
+      0.0
+    ]
+  ],
+  "kind": "cpu",
+  "method": "end_to_end_state_preparation",
+  "n": 8,
+  "output": "A:\\SQsp\\SIRIUS\\benchmarking\\local-runs\\sirius_research_closure_20261117_164817\\worker_results\\e2e_seeded_random_random_real_positive_random_pm_one_seed211.json",
+  "repetitions": 5,
+  "repo": ".",
+  "s": 8,
+  "seed": 211,
+  "sign_profile": "random_pm_one",
+  "signs": [
+    1,
+    1,
+    1,
+    -1,
+    1,
+    1,
+    -1,
+    -1
+  ],
+  "statevector_cap": 20,
+  "support": [
+    "00000101",
+    "00111101",
+    "01010000",
+    "01011011",
+    "10010000",
+    "10111101",
+    "11100010",
+    "11101100"
+  ],
+  "support_family": "seeded_random",
+  "warmups": 1
+}

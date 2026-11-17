@@ -1,0 +1,30 @@
+{
+  "kind": "cpu",
+  "method": "independent_batched_isometry",
+  "n": 16,
+  "output": "A:\\SQsp\\SIRIUS\\benchmarking\\local-runs\\sirius_research_closure_20261117_164817\\worker_results\\cpu_independent_batched_isometry_repeated_prefix_n16_s16_seed101.json",
+  "repetitions": 5,
+  "repo": ".",
+  "s": 16,
+  "seed": 101,
+  "support": [
+    "0000000011000110",
+    "0000001100011101",
+    "0000001101101110",
+    "0000001110001100",
+    "0000010110111101",
+    "0000011101111001",
+    "0000100000001110",
+    "0000100010100000",
+    "0000100101001100",
+    "0000100110100001",
+    "0000101010011101",
+    "0000110110001101",
+    "0000111010001000",
+    "0000111010101110",
+    "0000111011001000",
+    "0000111101110001"
+  ],
+  "support_family": "repeated_prefix",
+  "warmups": 2
+}

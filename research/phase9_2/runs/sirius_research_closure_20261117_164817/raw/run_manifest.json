@@ -1,0 +1,76 @@
+{
+  "authors_artifact_expected_md5": "c58634ba415b4e3fb729648460f32ad7",
+  "authors_case_count": 150,
+  "coefficient_families": [
+    "uniform_real_positive",
+    "random_real_positive",
+    "random_complex"
+  ],
+  "cpu_case_count": 300,
+  "cpu_methods": [
+    "independent_batched_isometry",
+    "malvetti_baseline",
+    "algorithm3/all_positive",
+    "algorithm3/random_pm_one"
+  ],
+  "cpu_size_pairs": [
+    [
+      16,
+      16
+    ],
+    [
+      24,
+      64
+    ],
+    [
+      32,
+      128
+    ],
+    [
+      48,
+      255
+    ],
+    [
+      63,
+      256
+    ]
+  ],
+  "created_at_utc": "2026-11-17T11:18:17.705618Z",
+  "end_to_end_case_count": 90,
+  "end_to_end_size": [
+    8,
+    8
+  ],
+  "gpu_case_count": 90,
+  "gpu_scope": "CuPy uint64 computational-basis row simulation only",
+  "gpu_size_pairs": [
+    [
+      24,
+      64
+    ],
+    [
+      32,
+      128
+    ]
+  ],
+  "independent_seeds": [
+    101,
+    211,
+    307,
+    401,
+    503
+  ],
+  "measured_repetitions": 5,
+  "runner_version": "1.0.1",
+  "sign_profiles": [
+    "all_positive",
+    "random_pm_one"
+  ],
+  "statevector_total_qubit_cap": 20,
+  "support_families": [
+    "seeded_random",
+    "zero_residual_subspace",
+    "repeated_prefix"
+  ],
+  "warmups": 2
+}
