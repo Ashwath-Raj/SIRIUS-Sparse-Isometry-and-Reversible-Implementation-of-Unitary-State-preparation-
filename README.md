@@ -74,7 +74,7 @@ The `sparseprep` package (`candidate_ai/src/sparseprep/`) contains a 100% clean-
 | **Phase 7** | Algorithm 3 sign- and marker-aware construction | Completed | `candidate_ai/src/sparseprep/algorithm3.py` |
 | **Phase 8** | Phase synthesis and end-to-end state preparation | Completed | `candidate_ai/src/sparseprep/state_preparation.py`, `phase_synthesis.py` |
 | **Phase 9.1** | Benchmark architecture, schemas, and plan design | Completed | `benchmarking/config/`, `benchmarking/schemas/` |
-| **Phase 9.2** | Device-local benchmark execution & modernization | **Executing** | Local runners, environment probe, analysis aggregation |
+| **Phase 9.2** | Device-local benchmark execution & research validation | **Partially validated** | `docs/research/FINAL_VALIDATION_REPORT.md`; local raw smoke evidence |
 
 ---
 
@@ -84,7 +84,7 @@ Phase 9.2 turns the Phase 9.1 benchmark architecture into an executable, reprodu
 - **Environment Probe:** Detects sanitized hardware and runtime details (CPU, RAM, GPU, driver, CUDA, CuPy).
 - **Benchmark Runner:** Executes parameterized workloads across comparison methods with high-resolution wall-clock (`perf_counter_ns`) and CPU (`process_time_ns`) timers, peak RSS tracking, and process isolation.
 - **Statistical Aggregation:** Aggregates immutable raw JSONL records, calculating median, IQR, min, max, and 95% bootstrap confidence intervals over independent seeds.
-- **GPU Throughput Lane:** Evaluates batched basis-row transformations on CUDA devices with host-device transfer time separated from device execution.
+- **GPU Basis-Row Lane:** Applies emitted SIRIUS reversible operations to basis rows on CUDA when available and checks parity against the CPU simulator. This is not complex-amplitude simulation. No GPU execution was available in the current validation environment.
 
 ---
 
@@ -117,7 +117,7 @@ SIRIUS/
 │   │   ├── support_generators.py # Deterministic workload generators
 │   │   ├── algorithms/     # Phase fixing and signed tableaux
 │   │   └── backends/       # CuPy uint64 batch simulator
-│   └── tests/              # 150 algorithm regression tests
+│   └── tests/              # Algorithm and invariant regression tests
 │
 ├── benchmarking/           # Benchmark infrastructure
 │   ├── config/             # Phase 9.1 benchmark plan (JSON)
@@ -170,7 +170,7 @@ pip install cupy-cuda13x
 
 ## 9. Running Tests
 
-Run the complete regression suite (159 tests):
+Run the complete regression suite:
 ```bash
 pytest
 ```
@@ -209,17 +209,17 @@ python -m benchmarking.analysis.aggregate \
 
 ## 11. GPU Backend Boundaries
 
-The CuPy backend (`sparseprep.backends.cupy_simulator`) simulates batches of computational-basis rows represented as `uint64` integers ($1 \le n \le 63$).
-- **What it is:** High-throughput classical verification of basis-state permutations over large batches of input words.
+The CuPy backend (`sparseprep.backends.cupy_simulator`) executes supported reversible gates over batches of computational-basis rows represented as `uint64` integers ($1 \le n \le 63$).
+- **What it is:** A classical basis-row executor that can check CPU parity for emitted reversible gate sequences when CUDA is available.
 - **What it is NOT:** It is NOT a complex-amplitude statevector simulator. It does NOT implement circuit compilation on GPU. It does NOT distribute a statevector across multiple GPUs.
-- All GPU measurements report transfer and device times separately and are labeled `gpu_basis_batch`.
+- GPU lane results distinguish transfer, kernel and total lane time. No GPU device was available during the latest local validation, so no acceleration or throughput result is claimed.
 
 ---
 
 ## 12. What Is Not Yet Implemented
 
 1. **Hardware-Native Transpilation:** Circuit outputs are logical reversible gate IR (`CMX`, `CX`, `MCX`, `Toffoli`). Physical hardware gate counts (e.g. Clifford+T, native 2-qubit gates, physical depth) require transpilation to a concrete hardware basis.
-2. **Authors' Reference Artifact Common Adapter:** The authors' reference implementation relies on Qualtran Bloqs and a Rust extension (`_isometry_algorithms`). It is maintained in `reference/` and documented in `research/maintenance/`; direct differential benchmarks are blocked until a version-pinned adapter is completed.
+2. **Full benchmark campaign:** Current evidence is a one-seed matched smoke, not the complete planned scaling/stress matrix. Reference mapping checks run locally; broad resource agreement remains unestablished.
 
 ---
 

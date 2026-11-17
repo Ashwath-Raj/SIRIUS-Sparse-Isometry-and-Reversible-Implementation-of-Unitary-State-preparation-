@@ -1,0 +1,261 @@
+{
+  "plan_version": "1.0.0",
+  "plan_id": "sirius-repair-matched-smoke-v1",
+  "project": {
+    "id": "sparse-state-preparation",
+    "name": "Independent Sparse Quantum State Preparation Implementation",
+    "release_phase": "9.1",
+    "paper_doi": "10.22331/q-2026-09-10-2208",
+    "paper_url": "https://quantum-journal.org/papers/q-2026-09-10-2208/",
+    "authors_artifact_url": "https://zenodo.org/records/18234600",
+    "authors_artifact_md5": "c58634ba415b4e3fb729648460f32ad7"
+  },
+  "comparison_methods": [
+    {
+      "id": "independent_batched_isometry",
+      "display_name": "Independent Rupprecht-Wolk-style batched isometry",
+      "implementation": "candidate_ai/src/sparseprep/batched_isometry.py",
+      "entrypoint": "sparseprep.run_batched_isometry",
+      "automated_in_9_2": true,
+      "comparison_role": "primary_candidate",
+      "scope": "isometry"
+    },
+    {
+      "id": "malvetti_baseline",
+      "display_name": "Malvetti isometry baseline",
+      "implementation": "candidate_ai/src/sparseprep/malvetti_baseline.py",
+      "entrypoint": "sparseprep.run_malvetti_baseline",
+      "automated_in_9_2": true,
+      "comparison_role": "internal_baseline",
+      "scope": "isometry"
+    },
+    {
+      "id": "end_to_end_state_preparation",
+      "display_name": "Complete logical sparse-state preparation",
+      "implementation": "candidate_ai/src/sparseprep/state_preparation.py",
+      "entrypoint": "sparseprep.compile_sparse_state_preparation",
+      "automated_in_9_2": true,
+      "comparison_role": "end_to_end_candidate",
+      "scope": "end_to_end"
+    },
+    {
+      "id": "authors_reference_artifact",
+      "display_name": "Authors' Rust/Python reference artifact",
+      "implementation": "reference/authors-artifact/source/ (local verified artifact)",
+      "entrypoint": null,
+      "automated_in_9_2": true,
+      "comparison_role": "external_differential_reference",
+      "scope": "isometry"
+    }
+  ],
+  "workload_families": {
+    "support": [
+      {
+        "id": "seeded_random",
+        "generator": "sparseprep.random_support",
+        "purpose": "General random distinct supports; canonical scaling family."
+      },
+      {
+        "id": "zero_residual_subspace",
+        "generator": "sparseprep.support_inside_subspace",
+        "purpose": "Boundary family with support already in the compact subspace."
+      },
+      {
+        "id": "repeated_prefix",
+        "generator": "sparseprep.support_with_repeated_prefix",
+        "purpose": "Stress common prefixes and distinct residual suffixes; eligible only when s <= 2**(n-ceil(log2(s)))."
+      }
+    ],
+    "coefficients": [
+      {
+        "id": "uniform_real_positive",
+        "purpose": "Equal positive real magnitudes; isolates isometry cost."
+      },
+      {
+        "id": "random_real_positive",
+        "purpose": "Unequal normalized real magnitudes."
+      },
+      {
+        "id": "random_complex",
+        "purpose": "Normalized complex Gaussian coefficients; exercises coefficient phase preparation."
+      }
+    ],
+    "sign_profiles": [
+      {
+        "id": "all_positive",
+        "purpose": "No independent real-sign correction."
+      },
+      {
+        "id": "random_pm_one",
+        "purpose": "Independent Algorithm 3 sign metadata, generated from the same seed."
+      }
+    ]
+  },
+  "tiers": {
+    "smoke": {
+      "n_values": [
+        8
+      ],
+      "s_values": [
+        3
+      ],
+      "seeds": [
+        17
+      ],
+      "support_families": [
+        "seeded_random"
+      ],
+      "coefficient_families": [
+        "uniform_real_positive"
+      ],
+      "sign_profiles": [
+        "all_positive"
+      ],
+      "repetitions": 1,
+      "warmups": 0,
+      "timeout_seconds_per_compile": 60
+    },
+    "scaling": {
+      "n_values": [
+        16,
+        24,
+        32,
+        48,
+        63
+      ],
+      "s_values": [
+        16,
+        31,
+        32,
+        63,
+        64,
+        127,
+        128,
+        255,
+        256
+      ],
+      "seeds": [
+        101,
+        211,
+        307,
+        401,
+        503
+      ],
+      "support_families": [
+        "seeded_random",
+        "repeated_prefix"
+      ],
+      "coefficient_families": [
+        "uniform_real_positive",
+        "random_real_positive",
+        "random_complex"
+      ],
+      "sign_profiles": [
+        "all_positive",
+        "random_pm_one"
+      ],
+      "repetitions": 5,
+      "warmups": 1,
+      "timeout_seconds_per_compile": 180
+    },
+    "stress": {
+      "n_values": [
+        32,
+        48,
+        63
+      ],
+      "s_values": [
+        512,
+        1024,
+        2048
+      ],
+      "seeds": [
+        701,
+        809
+      ],
+      "support_families": [
+        "seeded_random",
+        "repeated_prefix"
+      ],
+      "coefficient_families": [
+        "uniform_real_positive",
+        "random_complex"
+      ],
+      "sign_profiles": [
+        "all_positive",
+        "random_pm_one"
+      ],
+      "repetitions": 3,
+      "warmups": 1,
+      "timeout_seconds_per_compile": 600
+    }
+  },
+  "measurement_policy": {
+    "timer": "time.perf_counter_ns",
+    "compile_cpu_timer": "time.process_time_ns",
+    "memory": "peak process resident set size; normalize to bytes and record OS/source",
+    "runtime_aggregation": [
+      "median",
+      "interquartile_range",
+      "minimum",
+      "maximum"
+    ],
+    "confidence_interval": "95% bootstrap interval over independent seeds; do not bootstrap repeated timings as independent problem instances",
+    "randomness": "Every support/coefficient/sign generator receives the recorded seed. Store generator ID and seed in every record.",
+    "warmup_and_repetitions": "Use tier settings. Never merge warm-up timings into measured repetitions.",
+    "timeouts": "A timeout is a recorded outcome, not a missing row. Record elapsed time, timeout threshold and partial metrics if available.",
+    "gpu_synchronization": "Synchronize the active CUDA stream before and after timed GPU regions; report transfers separately where instrumented.",
+    "thermal_policy": "Record power mode, clocks if available, temperature if available, and idle/background-load notes. Do not compare runs with materially different throttling without flagging them."
+  },
+  "correctness_policy": {
+    "mandatory_for_all_instances": [
+      "support_injective",
+      "all_residuals_zero",
+      "inverse_round_trip"
+    ],
+    "statevector_verification": {
+      "enabled": true,
+      "max_total_qubits_default": 20,
+      "policy": "Run only when the full circuit including marker and work ancillas fits the configured cap. Otherwise record statevector_status=not_run_resource_cap; never treat a skipped statevector check as a pass."
+    },
+    "gpu_basis_batch": {
+      "backend": "CuPy uint64 basis-state simulator",
+      "supported_n_range": [
+        1,
+        63
+      ],
+      "policy": "Use only when CuPy and a CUDA device are detected; record GPU identity, transfer time, kernel time and synchronized wall time. This is not a GPU statevector simulator."
+    }
+  },
+  "hardware_lanes": [
+    {
+      "id": "laptop_cpu",
+      "role": "reference development, CPU construction, small exact statevector tests",
+      "required": true
+    },
+    {
+      "id": "laptop_gpu",
+      "role": "single-GPU CuPy basis-row batch parity and throughput where CUDA is available",
+      "required": false
+    },
+    {
+      "id": "workstation_cpu_gpu",
+      "role": "higher-throughput CPU/GPU repeatability and larger basis-row batches",
+      "required": false
+    },
+    {
+      "id": "dgx_gpu_node",
+      "role": "controlled accelerator throughput, per-device memory behavior and parallel independent workload sweeps",
+      "required": false
+    }
+  ],
+  "guardrails": {
+    "no_synthetic_results": true,
+    "no_cross_device_claim_from_unmatched_workloads": true,
+    "no_gpu_speedup_claim_for_cpu_only_compilation": true,
+    "no_unified_vram_assumption": true,
+    "no_hardware_native_depth_claim_without_transpilation": true,
+    "phase_9_1_executes_benchmarks": false,
+    "phase_9_2_is_local_uncommitted_execution": true
+  }
+}

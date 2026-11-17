@@ -9,7 +9,7 @@ The benchmark protocol quantifies:
 2. Peak resident memory usage ($RSS_{peak}$).
 3. Logical quantum resource scaling (Toffoli count, clean ancillas, emitted IR gate counts, logical depth).
 4. Correctness, tableau invariants, and bounded exact statevector fidelity.
-5. GPU basis-state row batch throughput (when supported and requested).
+5. GPU execution of emitted reversible basis-row operations, with transfer and kernel timings separated when CUDA is available.
 
 ---
 
@@ -20,7 +20,7 @@ The benchmark protocol quantifies:
 | `independent_batched_isometry` | Primary Candidate | `sparseprep.run_batched_isometry` | Automated in 9.2 |
 | `malvetti_baseline` | Internal Baseline | `sparseprep.run_malvetti_baseline` | Automated in 9.2 |
 | `end_to_end_state_preparation` | Full Pipeline | `sparseprep.compile_sparse_state_preparation` | Automated in 9.2 |
-| `authors_reference_artifact` | External Differential Reference | Isolated adapter | Blocked / External dependency |
+| `authors_reference_artifact` | External Differential Reference | Isolated adapter | Artifact build/load and matched smoke available; broad resource agreement not established |
 
 ---
 
@@ -67,7 +67,7 @@ Every benchmark attempt must pass correctness gates before metrics are considere
 1. **Tableau Invariant:** Forward circuit must map every input support row into the subspace register ($x_{i, \ell \dots n-1} = 0$).
 2. **Injectivity:** All mapped subspace labels must be distinct.
 3. **Round-Trip Invariant:** $G^\dagger G |x_i\rangle = |x_i\rangle$.
-4. **Statevector Fidelity (if $n \le 20$):** Fidelity $F \ge 1 - 10^{-7}$.
+4. **Exact statevector invariants (if total logical qubits fit the cap):** the implementation verifier checks fidelity, maximum amplitude error, support leakage, workspace leakage, output norm and inverse round-trip error with its declared `2e-9` absolute tolerance.
 
 ### Allowed Job Statuses
 - `completed`: Succeeded and passed all correctness checks.
@@ -85,7 +85,7 @@ All failed and timed-out attempts remain in the raw immutable JSONL records.
 ### 6.1 Raw Records (JSONL)
 Each execution attempt writes one JSON line validating against `benchmarking/schemas/run-record.schema.json`.
 Required fields include:
-- `record_version`: "1.0.0"
+- `record_version`: "1.1.0" for current runs; historical "1.0.0" records remain readable.
 - `run_id`, `plan_id`, `tier`, `algorithm_id`, `status`
 - `problem` ($n, s, \ell$, support family, SHA-256 hash of support)
 - `seed`, `environment`, `timings`, `logical_resources`, `correctness`, `provenance`
@@ -95,3 +95,15 @@ For completed runs:
 - Non-parametric statistics: **Median**, **Minimum**, **Maximum**, **Interquartile Range (IQR)**.
 - Independent seeds serve as the statistical sampling unit.
 - 95% bootstrap confidence intervals computed over independent seeds when sample size $N \ge 5$.
+
+Records failing schema validation are excluded from numerical buckets and listed in `record_validation_errors`. Their raw lines remain untouched. GPU lane outcomes are reported separately from top-level CPU compilation status. A `completed` CPU construction with an unavailable GPU sub-lane is not a GPU pass.
+
+## Final repair notes (schema 1.1 and summary 2.0)
+
+Support identity is order-sensitive. Each raw record contains the ordered input and a complete input digest; raw files are append-only per unique run ID. A tracked working-tree diff digest accompanies the HEAD SHA when the run is dirty. Historical schema 1.0 records remain readable; absent identity fields are never reconstructed or relabeled as known.
+
+The GPU lane compiles the SIRIUS batched isometry and applies its emitted reversible gate sequence to computational-basis rows. It checks each returned row against the CPU basis-row simulator and reports host-to-device, synchronized kernel, device-to-host, and end-to-end lane time separately. The computation is a basis-row permutation check, never a complex-amplitude statevector simulation. Unsupported gates and unavailable CUDA are explicit lane statuses. A transfer/XOR operation is not an algorithm benchmark.
+
+The aggregator keeps machine, workload, source, configuration, reference artifact and metric units separate. Its replication unit is the independent seed; repeated executions for a seed are collapsed within that seed. Paired differences/ratios are emitted only for matching input, seed, environment, configuration and artifact provenance. Failure, skip, timeout and GPU availability counts remain visible. A one-seed smoke run supports no inferential performance claim.
+
+Resource records keep paper-accounted and coherent Toffoli counts, emitted Toffoli operations, total emitted operations, end-to-end stage Toffolis, ancillas and logical qubits distinct. Gate-list length is not called circuit depth. Depth is null until a scheduling model is implemented.

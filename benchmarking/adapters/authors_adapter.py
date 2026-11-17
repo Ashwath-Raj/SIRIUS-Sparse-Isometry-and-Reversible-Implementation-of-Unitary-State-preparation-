@@ -7,6 +7,8 @@ Kept strictly isolated from sparseprep core.
 from __future__ import annotations
 
 import importlib.util
+import hashlib
+from functools import lru_cache
 from pathlib import Path
 import sys
 from typing import Any
@@ -28,6 +30,10 @@ AUTHORS_ARTIFACT_SRC = (
 _RUST_MODULE: Any = None
 _LOAD_ATTEMPTED = False
 _BLOCK_REASON: str | None = None
+
+
+class AuthorsReferenceUnsupportedInput(ValueError):
+    """The official kernel has a narrower input domain than SparseStateProblem."""
 
 
 def _load_authors_rust_extension() -> tuple[Any, str | None]:
@@ -63,12 +69,36 @@ def is_authors_artifact_available() -> bool:
     return mod is not None
 
 
+@lru_cache(maxsize=1)
+def get_reference_artifact_sha256() -> str | None:
+    archive = AUTHORS_ARTIFACT_SRC.parents[3] / "official-artifact.zip"
+    return hashlib.sha256(archive.read_bytes()).hexdigest() if archive.is_file() else None
+
+
 def get_authors_artifact_status() -> dict[str, Any]:
     mod, reason = _load_authors_rust_extension()
+    archive = AUTHORS_ARTIFACT_SRC.parents[3] / "official-artifact.zip"
+    digest = get_reference_artifact_sha256()
+    expected_md5 = "c58634ba415b4e3fb729648460f32ad7"
+    archive_md5 = None
+    if archive.is_file():
+        md5 = hashlib.md5()
+        md5.update(archive.read_bytes())
+        archive_md5 = md5.hexdigest()
+    artifact_integrity = "verified" if archive_md5 == expected_md5 else "missing_or_digest_mismatch"
+    reference_status = (
+        "BLOCKED_ARTIFACT" if artifact_integrity != "verified"
+        else "BLOCKED_BUILD" if mod is None
+        else "PASS"
+    )
     return {
         "available": mod is not None,
+        "reference_status": reference_status,
         "blocked_reason": reason,
         "artifact_path": str(AUTHORS_ARTIFACT_SRC),
+        "artifact_sha256": digest,
+        "artifact_md5": archive_md5,
+        "artifact_integrity": artifact_integrity,
     }
 
 
@@ -93,6 +123,11 @@ def run_authors_reference_isometry(
     mod, reason = _load_authors_rust_extension()
     if mod is None:
         raise RuntimeError(f"Authors' reference artifact is unavailable: {reason}")
+    if problem.s < 2 or problem.residual_width < 1:
+        raise AuthorsReferenceUnsupportedInput(
+            "authors' Rust isometry kernel requires s >= 2 and at least one residual wire "
+            f"(got n={problem.n}, s={problem.s}, residual_width={problem.residual_width})"
+        )
 
     # Build 2-D numpy bool array (shape s x n)
     state_arr = np.array(
@@ -107,9 +142,30 @@ def run_authors_reference_isometry(
 
     bijection, circuit = mod.find_bijection_and_circuit(state_arr, signs_arr, sub_problem_size)
     toffoli_cost = mod.fast_toffoli_counter(circuit)
+    raw_cost = int(toffoli_cost)
+    counter_status = "valid"
+    reported_cost: int | None = raw_cost
+    if raw_cost > sys.maxsize:
+        # The official Rust source uses `next_power_of_two() - 2`; for a
+        # zero-operation bucket this underflows usize and Python receives a
+        # huge wrapped count. Preserve the raw value, never present it as cost.
+        counter_status = "suspected_usize_underflow"
+        reported_cost = None
+    mapping = tuple((int(label), int(row)) for label, row in bijection)
+    labels = [label for label, _ in mapping]
+    rows = [row for _, row in mapping]
+    if len(mapping) != problem.s or sorted(rows) != list(range(problem.s)):
+        raise RuntimeError("authors' reference returned a non-total row mapping")
+    if len(set(labels)) != len(labels) or any(label < 0 or label >= (1 << problem.ell) for label in labels):
+        raise RuntimeError("authors' reference returned a non-injective or out-of-range compact-label mapping")
 
     return {
-        "bijection": bijection,
+        "bijection": mapping,
         "circuit_batches_count": len(circuit),
-        "paper_accounted_toffoli": int(toffoli_cost),
+        "paper_accounted_toffoli": reported_cost,
+        "paper_accounted_toffoli_raw": raw_cost,
+        "resource_count_status": counter_status,
+        "mapping_status": "passed",
+        "artifact_status": "verified",
+        "reference_status": "PASS",
     }

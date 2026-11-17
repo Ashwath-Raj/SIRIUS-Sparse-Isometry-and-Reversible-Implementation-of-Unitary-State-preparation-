@@ -410,7 +410,9 @@ class SparseStatePreparationCircuit:
             expected[basis << self.workspace_qubits] = amplitude
         max_error = max(abs(a - b) for a, b in zip(actual, expected))
         inner = sum(expected[i].conjugate() * actual[i] for i in range(len(actual)))
-        fidelity = abs(inner) ** 2
+        # Fidelity is mathematically in [0, 1] by Cauchy-Schwarz. Clamp only
+        # floating-point overshoot/undershoot at the representation boundary.
+        fidelity = min(1.0, max(0.0, abs(inner) ** 2))
         leakage = sum(abs(value) ** 2 for index, value in enumerate(actual) if index & workspace_mask)
         outside = sum(
             abs(value) ** 2 for index, value in enumerate(actual)

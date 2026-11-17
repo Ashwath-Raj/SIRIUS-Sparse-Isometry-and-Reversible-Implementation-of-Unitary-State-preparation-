@@ -1,0 +1,35 @@
+{
+  "manifest_version": "1.0.0",
+  "machine_id": "local-sirius-validation",
+  "captured_at_utc": "2026-11-17T14:37:57.564997Z",
+  "os": {
+    "name": "Linux",
+    "version": "#43-Ubuntu SMP PREEMPT_DYNAMIC Fri Oct 23 13:25:25 UTC 2026",
+    "kernel": "7.0.0-43-generic"
+  },
+  "python": {
+    "implementation": "CPython",
+    "version": "3.14.4",
+    "executable": "python"
+  },
+  "cpu": {
+    "model": "AMD Ryzen 5 6600H with Radeon Graphics",
+    "logical_cores": 12,
+    "physical_cores": 6,
+    "architecture": "x86_64"
+  },
+  "memory": {
+    "ram_total_bytes": 15491403776,
+    "swap_total_bytes": 4294963200
+  },
+  "gpu_devices": [],
+  "software": {
+    "nvidia_driver": null,
+    "cuda_runtime": "13.2",
+    "cuda_toolkit": null,
+    "cupy": "14.2.0",
+    "numpy": "2.5.4",
+    "git": "e90449ea7c4751ed125aad88fef8d2f142086dc6"
+  },
+  "notes": "Local validation environment manifest; no hardware execution claim."
+}

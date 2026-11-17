@@ -54,3 +54,9 @@ Timeouts and memory failures remain in the raw dataset. Report them as censored/
 ## 7. Artifact integrity
 
 Before invoking the authors' reference artifact, verify its expected MD5 `c58634ba415b4e3fb729648460f32ad7` and record the actual local digest. The artifact is a pinned external comparator, not an editable dependency of this project. Do not modify its lockfile during Phase 9.2.
+
+## 8. Final identity and aggregation additions
+
+Run-record schema 1.1 preserves ordered support under `input_identity.ordered_support`; the support SHA-256 includes canonical JSON framing and register width. The full input digest also includes coefficients as real/imaginary pairs, sign values/profile, family identifiers, seed, generator version and workload parameters. Benchmark configuration (repetitions, warmups, timeout, GPU request and exact-statevector cap) is recorded separately from mathematical input identity.
+
+Aggregations separate support/coefficient/sign families, backend, CPU/GPU descriptors, runtime versions, reference artifact digest, benchmark configuration and source diff/commit. Repeated timer results for one seed are collapsed before seeds are treated as replications. Candidate/reference paired summaries require equal input identity, seed, hardware/runtime fingerprint, benchmark configuration and reference artifact digest. Historical 1.0 records remain readable and are tagged `legacy_unknown` where provenance fields were not recorded.

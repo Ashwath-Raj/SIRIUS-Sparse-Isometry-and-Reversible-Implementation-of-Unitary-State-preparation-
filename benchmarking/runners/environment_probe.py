@@ -7,6 +7,7 @@ benchmarking/schemas/run-record.schema.json.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from datetime import datetime, timezone
 import json
 import os
@@ -54,6 +55,21 @@ def get_git_dirty(cwd: Path | None = None) -> bool:
     except Exception:
         pass
     return False
+
+
+def get_git_diff_sha256(cwd: Path | None = None) -> str | None:
+    """Digest the complete tracked working-tree diff from HEAD for dirty-run provenance."""
+    root = cwd or Path(__file__).resolve().parents[2]
+    try:
+        res = subprocess.run(
+            ["git", "diff", "HEAD", "--binary"], cwd=root,
+            capture_output=True, timeout=10, check=False,
+        )
+        if res.returncode == 0:
+            return hashlib.sha256(res.stdout).hexdigest()
+    except Exception:
+        pass
+    return None
 
 
 def get_cpu_info() -> dict[str, Any]:

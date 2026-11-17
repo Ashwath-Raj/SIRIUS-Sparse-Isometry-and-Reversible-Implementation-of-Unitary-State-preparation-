@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import math
+import multiprocessing
 from pathlib import Path
 import random
 import resource
@@ -34,19 +35,53 @@ from sparseprep import (
 )
 from sparseprep.simulator import simulate_basis_state
 
-from .environment_probe import get_git_commit, probe_run_environment
+from .environment_probe import get_git_commit, get_git_diff_sha256, get_git_dirty, probe_run_environment
 
 RUN_RECORD_SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schemas" / "run-record.schema.json"
 DEFAULT_PLAN_PATH = Path(__file__).resolve().parents[1] / "config" / "phase9_1_benchmark_plan.json"
 STATEVECTOR_MAX_QUBITS_DEFAULT = 20
+STATEVECTOR_ATOL_DEFAULT = 2e-9
 
 
-def compute_support_hash(support: tuple[str, ...]) -> str:
-    hasher = hashlib.sha256()
-    for item in sorted(support):
-        hasher.update(item.encode("utf-8"))
-        hasher.update(b"\n")
-    return hasher.hexdigest()
+def compute_support_hash(support: tuple[str, ...], n: int | None = None) -> str:
+    """Hash the exact ordered support, with width and unambiguous JSON framing."""
+    from sparseprep import ProblemValidationError, SparseStateProblem
+
+    rows = tuple(support)
+    if not rows:
+        raise ProblemValidationError("support must contain at least one basis state")
+    width = len(rows[0]) if n is None else n
+    if isinstance(width, bool) or not isinstance(width, int) or width < 1:
+        raise ProblemValidationError("register width must be a positive integer")
+    SparseStateProblem(n=width, support=rows)
+    payload = json.dumps(
+        {"identity_version": "ordered-support-v2", "n": width, "support": rows},
+        ensure_ascii=True, separators=(",", ":"),
+    ).encode("ascii")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def compute_workload_identity(
+    *, n: int, support: tuple[str, ...], coefficients: tuple[complex, ...],
+    signs: tuple[int, ...], support_family: str, coefficient_family: str,
+    sign_profile: str, seed: int, generator_version: str = "0.9.2",
+    workload_parameters: dict[str, Any] | None = None,
+    algorithm_configuration: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return versioned, deterministic identity metadata for a complete workload."""
+    support_sha256 = compute_support_hash(support, n)
+    payload = {
+        "identity_version": "sirius-workload-v1", "n": n,
+        "ordered_support": list(support), "support_sha256": support_sha256,
+        "coefficients": [[float(c.real), float(c.imag)] for c in coefficients],
+        "coefficient_family": coefficient_family, "signs": list(signs),
+        "sign_profile": sign_profile, "support_family": support_family,
+        "generator_version": generator_version, "seed": seed,
+        "workload_parameters": workload_parameters or {},
+        "algorithm_configuration": algorithm_configuration or {},
+    }
+    digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+    return {**payload, "sha256": digest}
 
 
 def generate_coefficients(s: int, family: str, seed: int) -> tuple[complex, ...]:
@@ -174,8 +209,15 @@ def _execute_compile_worker(
         "coherent_toffoli": None,
         "emitted_toffoli_ir": None,
         "logical_depth": None,
+        "emitted_operation_count": None,
         "native_gate_count": None,
         "t_count": None,
+        "resource_scope": "isometry_only",
+        "dense_loader_emitted_toffoli": None,
+        "sign_oracle_emitted_toffoli": None,
+        "inverse_isometry_emitted_toffoli": None,
+        "marker_cleanup_emitted_toffoli": None,
+        "end_to_end_emitted_toffoli_ir": None,
     }
 
     correctness: dict[str, Any] = {
@@ -197,7 +239,7 @@ def _execute_compile_worker(
         )
         resources["clean_ancillas"] = r.max_clean_ancillas_used
         resources["logical_qubits"] = n + anc_count
-        resources["logical_depth"] = len(last_res.forward_gates)
+        resources["emitted_operation_count"] = len(last_res.forward_gates)
 
         # Invariant check: round-trip on all basis inputs
         for bitstr in support:
@@ -218,7 +260,7 @@ def _execute_compile_worker(
         resources["emitted_toffoli_ir"] = sum(
             1 for g in last_res.forward_gates if type(g).__name__ in ("Toffoli", "NegativeControlToffoli")
         )
-        resources["logical_depth"] = len(last_res.forward_gates)
+        resources["emitted_operation_count"] = len(last_res.forward_gates)
 
         # Invariant check
         for bitstr in support:
@@ -231,29 +273,45 @@ def _execute_compile_worker(
 
     elif algorithm_id == "end_to_end_state_preparation":
         r = last_res.resources
+        resources["resource_scope"] = "end_to_end; paper-accounted count is isometry component only"
         resources["paper_accounted_toffoli"] = r.algorithm3_paper_accounted_toffolis
         resources["coherent_toffoli"] = r.algorithm3_coherent_toffolis
         resources["clean_ancillas"] = r.algorithm3_clean_ancillas + r.phase_clean_ancillas
         resources["logical_qubits"] = r.total_qubits
         resources["emitted_toffoli_ir"] = r.total_toffolis
-        resources["logical_depth"] = r.total_operations
+        resources["dense_loader_emitted_toffoli"] = r.dense_loader.toffoli
+        resources["sign_oracle_emitted_toffoli"] = r.sign_oracle.toffoli
+        resources["inverse_isometry_emitted_toffoli"] = r.inverse_isometry.toffoli
+        resources["marker_cleanup_emitted_toffoli"] = r.marker_cleanup.toffoli
+        resources["end_to_end_emitted_toffoli_ir"] = r.total_toffolis
+        resources["emitted_operation_count"] = r.total_operations
 
         # Exact statevector validation if within cap
         if r.total_qubits <= qubit_cap:
             try:
-                _, metrics = prepare_sparse_state(problem, statevector_max_total_qubits=qubit_cap)
+                _, metrics = prepare_sparse_state(
+                    problem, max_statevector_qubits=qubit_cap,
+                    atol=STATEVECTOR_ATOL_DEFAULT,
+                )
                 correctness["statevector_status"] = "passed"
                 correctness["fidelity"] = float(metrics.fidelity)
                 correctness["maximum_amplitude_error"] = float(metrics.maximum_amplitude_error)
                 correctness["outside_support_probability"] = float(metrics.outside_support_probability)
                 correctness["workspace_leakage_probability"] = float(metrics.workspace_leakage_probability)
                 correctness["inverse_round_trip_error"] = float(metrics.inverse_round_trip_error)
-            except Exception:
+            except Exception as exc:
                 correctness["statevector_status"] = "failed"
+                correctness["statevector_error"] = f"{type(exc).__name__}: {exc}"
+        else:
+            correctness["statevector_status"] = "not_run_resource_cap"
     elif algorithm_id == "authors_reference_artifact":
         resources["paper_accounted_toffoli"] = last_res["paper_accounted_toffoli"]
         resources["coherent_toffoli"] = last_res["paper_accounted_toffoli"]
-        resources["logical_depth"] = last_res["circuit_batches_count"]
+        resources["authors_counter_raw"] = last_res["paper_accounted_toffoli_raw"]
+        resources["authors_counter_status"] = last_res["resource_count_status"]
+        resources["authors_reference_status"] = last_res["reference_status"]
+        resources["logical_depth"] = None
+        resources["authors_circuit_batches_count"] = last_res["circuit_batches_count"]
 
     return {
         "compile_wall_ms": compile_wall_ms,
@@ -264,57 +322,56 @@ def _execute_compile_worker(
     }
 
 
-def _execute_gpu_lane(support: tuple[str, ...], n: int) -> dict[str, float | None]:
-    """Evaluates CuPy basis-row batch throughput if CuPy and CUDA are available."""
+def _execute_gpu_lane(support: tuple[str, ...], n: int, gates: tuple[Any, ...], ancilla_count: int) -> dict[str, Any]:
+    """Execute a compiled SIRIUS reversible sequence on GPU basis rows and check CPU parity."""
+    from sparseprep.simulator import simulate_basis_state
+
     try:
         import cupy as cp
-        from sparseprep.backends.cupy_simulator import CuPyBasisRowSimulator
-    except Exception:
-        return {
-            "gpu_basis_batch_wall_ms": None,
-            "gpu_kernel_ms": None,
-            "host_to_device_ms": None,
-            "device_to_host_ms": None,
-        }
+        from sparseprep.backends.cupy_simulator import simulate_int_states_cupy
+        from sparseprep.model import bitstring_to_int
+    except Exception as exc:
+        return {"gpu_execution_status": "unavailable", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": f"{type(exc).__name__}: {exc}"}
 
-    if n > 63:
-        return {
-            "gpu_basis_batch_wall_ms": None,
-            "gpu_kernel_ms": None,
-            "host_to_device_ms": None,
-            "device_to_host_ms": None,
-        }
+    try:
+        if cp.cuda.runtime.getDeviceCount() < 1:
+            return {"gpu_execution_status": "unavailable", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": "CuPy reports no CUDA device"}
+    except Exception as exc:
+        return {"gpu_execution_status": "unavailable", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": f"CUDA device probe failed: {type(exc).__name__}: {exc}"}
 
-    # Convert support to uint64 array
-    int_words = [int(s, 2) for s in support]
+    wire_count = n + ancilla_count
+    if wire_count > 63:
+        return {"gpu_execution_status": "unsupported_width", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": f"uint64 backend limit is 63 wires; workload requires {wire_count}"}
+
+    rows = tuple(s + "0" * ancilla_count for s in support)
+    int_words = [bitstring_to_int(s) for s in rows]
+    expected = tuple(simulate_basis_state(row, gates) for row in rows)
     t0_total = time.perf_counter_ns()
-
-    # Host-to-device transfer
     t0_h2d = time.perf_counter_ns()
     d_arr = cp.asarray(int_words, dtype=cp.uint64)
     cp.cuda.Stream.null.synchronize()
     t1_h2d = time.perf_counter_ns()
-
-    # Kernel execution (bit reversal / inversion demo pass via CuPyBasisRowSimulator)
     t0_kern = time.perf_counter_ns()
-    # Simple reversible NOT mask kernel
-    d_out = d_arr ^ cp.uint64(1)
+    d_out = simulate_int_states_cupy(d_arr, wire_count, gates)
     cp.cuda.Stream.null.synchronize()
     t1_kern = time.perf_counter_ns()
-
-    # Device-to-host transfer
     t0_d2h = time.perf_counter_ns()
     h_out = cp.asnumpy(d_out)
     cp.cuda.Stream.null.synchronize()
     t1_d2h = time.perf_counter_ns()
-
     t1_total = time.perf_counter_ns()
+    actual = tuple(format(int(value), f"0{wire_count}b") for value in h_out)
+    if actual != expected:
+        return {"gpu_execution_status": "parity_failed", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": "GPU basis-row output differs from CPU simulator"}
 
     return {
+        "gpu_execution_status": "passed",
+        "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW",
         "gpu_basis_batch_wall_ms": (t1_total - t0_total) / 1e6,
         "gpu_kernel_ms": (t1_kern - t0_kern) / 1e6,
         "host_to_device_ms": (t1_h2d - t0_h2d) / 1e6,
         "device_to_host_ms": (t1_d2h - t0_d2h) / 1e6,
+        "gpu_rows_verified": len(rows),
     }
 
 
@@ -357,55 +414,25 @@ def run_benchmark_job(
 ) -> dict[str, Any]:
     started_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     ell = ceil_log2_positive(s)
-
-    # Method check
-    if algorithm_id == "authors_reference_artifact":
-        from benchmarking.adapters.authors_adapter import get_authors_artifact_status, is_authors_artifact_available
-        if not is_authors_artifact_available():
-            status_info = get_authors_artifact_status()
-            ended_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-            return {
-                "record_version": "1.0.0",
-                "run_id": run_id,
-                "plan_id": plan_id,
-                "tier": tier,
-                "algorithm_id": algorithm_id,
-                "status": "skipped",
-                "problem": {
-                    "n": n,
-                    "s": s,
-                    "ell": ell,
-                    "support_family": support_family,
-                    "coefficient_family": coefficient_family,
-                    "sign_profile": sign_profile,
-                    "support_sha256": "0" * 64,
-                },
-                "seed": seed,
-                "environment": environment,
-                "timings": {},
-                "logical_resources": {},
-                "correctness": {},
-                "provenance": {
-                    "git_commit": get_git_commit(),
-                    "paper_doi": paper_doi,
-                    "artifact_md5": artifact_md5,
-                    "generator_version": "0.9.2",
-                    "started_at_utc": started_at,
-                    "ended_at_utc": ended_at,
-                },
-                "notes": f"Authors reference artifact adapter unavailable: {status_info.get('blocked_reason')}",
-            }
+    from benchmarking.adapters.authors_adapter import get_reference_artifact_sha256
+    artifact_sha256 = get_reference_artifact_sha256()
 
     # Generate deterministic workload
     try:
         support = generate_support(n, s, support_family, seed)
         coeffs = generate_coefficients(s, coefficient_family, seed)
         signs = generate_signs(s, sign_profile, seed)
-        support_hash = compute_support_hash(support)
+        support_hash = compute_support_hash(support, n)
+        input_identity = compute_workload_identity(
+            n=n, support=support, coefficients=coeffs, signs=signs,
+            support_family=support_family, coefficient_family=coefficient_family,
+            sign_profile=sign_profile, seed=seed,
+            workload_parameters={"tier": tier, "s": s},
+        )
     except Exception as exc:
         ended_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         return {
-            "record_version": "1.0.0",
+            "record_version": "1.1.0",
             "run_id": run_id,
             "plan_id": plan_id,
             "tier": tier,
@@ -418,7 +445,7 @@ def run_benchmark_job(
                 "support_family": support_family,
                 "coefficient_family": coefficient_family,
                 "sign_profile": sign_profile,
-                "support_sha256": "0" * 64,
+                "support_sha256": None,
             },
             "seed": seed,
             "environment": environment,
@@ -427,6 +454,8 @@ def run_benchmark_job(
             "correctness": {},
             "provenance": {
                 "git_commit": get_git_commit(),
+                "git_dirty": get_git_dirty(),
+                "source_diff_sha256": get_git_diff_sha256(),
                 "paper_doi": paper_doi,
                 "artifact_md5": artifact_md5,
                 "generator_version": "0.9.2",
@@ -436,6 +465,32 @@ def run_benchmark_job(
             "notes": f"Workload generation skipped or invalid: {exc}",
         }
 
+    if algorithm_id == "authors_reference_artifact":
+        from benchmarking.adapters.authors_adapter import get_authors_artifact_status
+        status_info = get_authors_artifact_status()
+        if status_info.get("reference_status") != "PASS":
+            ended_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            return {
+                "record_version": "1.1.0", "run_id": run_id, "plan_id": plan_id,
+                "tier": tier, "algorithm_id": algorithm_id, "status": "skipped",
+                "problem": {"n": n, "s": s, "ell": ell, "support_family": support_family,
+                            "coefficient_family": coefficient_family, "sign_profile": sign_profile,
+                            "support_sha256": support_hash},
+                "input_identity": input_identity,
+                "benchmark_configuration": {"plan_id": plan_id, "tier": tier, "repetitions": repetitions,
+                    "warmups": warmups, "timeout_seconds": timeout_sec, "gpu_enabled": enable_gpu,
+                    "statevector_max_qubits": qubit_cap},
+                "seed": seed, "environment": environment,
+                "timings": {}, "logical_resources": {}, "correctness": {},
+                "provenance": {"git_commit": get_git_commit(), "git_dirty": get_git_dirty(),
+                               "source_diff_sha256": get_git_diff_sha256(), "paper_doi": paper_doi,
+                               "artifact_md5": artifact_md5, "artifact_sha256": artifact_sha256,
+                               "reference_status": status_info.get("reference_status"),
+                               "generator_version": "0.9.2", "started_at_utc": started_at,
+                               "ended_at_utc": ended_at},
+                "notes": f"Authors reference {status_info.get('reference_status')}: {status_info.get('blocked_reason') or status_info.get('artifact_integrity')}",
+            }
+
     # Run compilation with process isolation and timeout
     status = "completed"
     error_note: str | None = None
@@ -444,7 +499,10 @@ def run_benchmark_job(
     correctness: dict[str, Any] = {}
 
     try:
-        with ProcessPoolExecutor(max_workers=1) as executor:
+        # Explicit spawn avoids Python 3.14's platform default forkserver, which
+        # requires an IPC resource that may be unavailable in managed runners.
+        mp_context = multiprocessing.get_context("spawn")
+        with ProcessPoolExecutor(max_workers=1, mp_context=mp_context) as executor:
             future = executor.submit(
                 _execute_compile_worker,
                 algorithm_id,
@@ -463,9 +521,12 @@ def run_benchmark_job(
             logical_resources = worker_res["logical_resources"]
             correctness = worker_res["correctness"]
 
-            if correctness.get("inverse_round_trip_error", 0.0) > 0.0:
+            if correctness.get("inverse_round_trip_error", 0.0) > STATEVECTOR_ATOL_DEFAULT:
                 status = "failed"
                 error_note = "Inverse round-trip check failed on support basis states."
+            if correctness.get("statevector_status") == "failed":
+                status = "failed"
+                error_note = f"Exact statevector verification failed: {correctness.get('statevector_error', 'unspecified error')}"
     except FutureTimeoutError:
         status = "timed_out"
         error_note = f"Compilation exceeded timeout of {timeout_sec}s."
@@ -476,17 +537,25 @@ def run_benchmark_job(
     # Optional GPU throughput lane
     if enable_gpu and status == "completed":
         try:
-            gpu_res = _execute_gpu_lane(support, n)
+            if algorithm_id != "independent_batched_isometry":
+                gpu_res = {"gpu_execution_status": "not_applicable", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": "GPU lane currently requires independent_batched_isometry output"}
+            else:
+                problem = SparseStateProblem(n=n, support=support, coefficients=coeffs, signs=signs)
+                compiled = run_batched_isometry(problem)
+                gpu_res = _execute_gpu_lane(support, n, compiled.forward_gates, len(compiled.ancilla_wires))
             timings.update(gpu_res)
+            if gpu_res.get("gpu_execution_status") in ("failed", "parity_failed"):
+                status = "failed"
+                error_note = f"GPU reversible basis-row validation failed: {gpu_res.get('gpu_error', gpu_res['gpu_execution_status'])}"
         except Exception as exc:
-            timings["gpu_basis_batch_wall_ms"] = None
-            if not error_note:
-                error_note = f"GPU lane error: {exc}"
+            timings.update({"gpu_execution_status": "failed", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": f"{type(exc).__name__}: {exc}"})
+            status = "failed"
+            error_note = f"GPU reversible basis-row validation failed: {type(exc).__name__}: {exc}"
 
     ended_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
     record: dict[str, Any] = {
-        "record_version": "1.0.0",
+        "record_version": "1.1.0",
         "run_id": run_id,
         "plan_id": plan_id,
         "tier": tier,
@@ -501,6 +570,10 @@ def run_benchmark_job(
             "sign_profile": sign_profile,
             "support_sha256": support_hash,
         },
+        "input_identity": input_identity,
+        "benchmark_configuration": {"plan_id": plan_id, "tier": tier, "repetitions": repetitions,
+            "warmups": warmups, "timeout_seconds": timeout_sec, "gpu_enabled": enable_gpu,
+            "statevector_max_qubits": qubit_cap},
         "seed": seed,
         "environment": environment,
         "timings": timings,
@@ -508,8 +581,11 @@ def run_benchmark_job(
         "correctness": correctness,
         "provenance": {
             "git_commit": get_git_commit(),
+            "git_dirty": get_git_dirty(),
+            "source_diff_sha256": get_git_diff_sha256(),
             "paper_doi": paper_doi,
             "artifact_md5": artifact_md5,
+            "artifact_sha256": artifact_sha256,
             "generator_version": "0.9.2",
             "started_at_utc": started_at,
             "ended_at_utc": ended_at,
@@ -585,7 +661,7 @@ def main() -> int:
         total_jobs = len(jobs)
 
     # Preflight summary
-    run_timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    run_timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%fZ")
     run_id = f"sirius_{args.tier}_{run_timestamp}"
 
     print("================================================================================")
@@ -625,6 +701,7 @@ def main() -> int:
     failed_count = 0
     skipped_count = 0
     timeout_count = 0
+    schema_error_count = 0
 
     with jsonl_path.open("a", encoding="utf-8") as f_out:
         for idx, job in enumerate(jobs, start=1):
@@ -651,6 +728,7 @@ def main() -> int:
             # Validate against schema
             errors = validate_run_record(record)
             if errors:
+                schema_error_count += 1
                 print(f"\nWarning: Record failed schema validation (Job {idx}):", file=sys.stderr)
                 for err in errors:
                     print(f"  {err}", file=sys.stderr)
@@ -681,9 +759,10 @@ def main() -> int:
     print(f"  Failed:    {failed_count}")
     print(f"  Skipped:   {skipped_count}")
     print(f"  Timed out: {timeout_count}")
+    print(f"  Schema-invalid records: {schema_error_count}")
     print(f"Raw immutable output preserved: {jsonl_path}")
     print("--------------------------------------------------------------------------------")
-    return 0 if failed_count == 0 else 2
+    return 0 if failed_count == 0 and schema_error_count == 0 else 2
 
 
 if __name__ == "__main__":

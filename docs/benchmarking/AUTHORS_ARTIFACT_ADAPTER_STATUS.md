@@ -1,76 +1,42 @@
-# Authors' Reference Artifact Audit & Adapter Status
+# Authors' Official Artifact and Adapter Status
 
-**Date:** 2026-11-16  
-**Artifact Identifier:** Zenodo Record 18234600  
-**Artifact Archive:** `reference/authors-artifact/official-artifact.zip`  
-**Expected MD5:** `c58634ba415b4e3fb729648460f32ad7` (Verified matching)  
-**Extracted Path:** `reference/authors-artifact/source/Code_for_Sparse_quantum_state_preparation_with_improved_Toffoli_cost`  
-**License:** Apache-2.0 (source code), CC-BY-4.0 (figures)  
+**Paper:** Felix Rupprecht and Sabine Wölk, *Sparse quantum state preparation with improved Toffoli cost*, Quantum (2026), DOI `10.22331/q-2026-09-10-2208`.
 
----
+**Artifact:** Zenodo record 18234600, `reference/authors-artifact/official-artifact.zip`.
 
-## 1. Official Artifact Architecture
+- Expected MD5: `c58634ba415b4e3fb729648460f32ad7`
+- Verified local MD5: `c58634ba415b4e3fb729648460f32ad7`
+- Local SHA-256: `4aa9ccdf5a4ae25f389e93dc8c9d7cada71f404f6a64d243038f374da81f6456`
+- Official ABI3 module: loads from the extracted artifact.
+- Official build: `uv run --frozen ...` built the package successfully; importing `sparse_state_preparation._isometry_algorithms` in that environment passed. `python -m maturin --version` is unavailable in the runtime interpreter because Maturin is a build backend, not an installed runtime module. This is not a current build blocker.
+- The supplied 30-page audit and named Phase 9.2 evidence branch were not present in the local checkout/object database at initial inspection.
 
-The authors' artifact is divided into two primary layers:
-1. **Qualtran Bloq Layer (Python):**
-   - High-level quantum state preparation circuits represented as Google Qualtran Bloqs:
-     - `SparseStatePreparation` (in `sparse_state_preparation/sparse_state_preparation.py`)
-     - `IsometryToSubspaceViaBatching` (in `sparse_state_preparation/isometry.py`)
-     - `DenseStatePreparationViaQROAM` (in `sparse_state_preparation/dense_state_preparation.py`)
-   - Dependencies: `qualtran` (requires installation from git repository `https://github.com/quantumlib/Qualtran`), `attrs`, `rsmf`, and a Jupyter notebook environment.
-   - Note on security: The authors explicitly note in their README that Qualtran requires `nbconvert <= 7.16.6`, which has a known CVE (GHSA-xm59-rqc7-hhvf).
+## Adapter contract
 
-2. **Computational Isometry Engine (Rust / C-ABI Extension):**
-   - Implemented in Rust under `src/isometry_algorithms/`:
-     - `problem.rs`: Batched isometry synthesis and problem partitioning.
-     - `tableau.rs`: Tableau representation and column updates.
-     - `column.rs`: Bit-column operations.
-     - `gates.rs`: Gate definitions and reversible operations.
-   - Python C-ABI binding via `pyo3`: `src/lib.rs`.
-   - Pre-compiled ABI3 shared object: `_isometry_algorithms.abi3.so`.
+`benchmarking/adapters/authors_adapter.py` validates the artifact checksum, loads the compiled Rust extension in isolation, preserves input row order, and returns the reference's row-to-compact-label pairs. It checks that every input row occurs exactly once and compact labels are unique and in range. The reference API does not expose a primitive-gate sequence that can be directly executed by the SIRIUS CPU/GPU simulators, so no gate-by-gate parity is claimed.
 
----
+The artifact kernel requires `s >= 2` and a positive residual width. Unsupported valid SIRIUS inputs are reported as reference failures with their exact reason. The full official benchmark plan includes `s=1`, so those cases cannot be counted as reference passes.
 
-## 2. Kernel Interface & Entrypoints
+## Differential evidence and limitations
 
-The Rust extension exposes two core functions directly to Python:
-```python
-find_bijection_and_circuit(
-    state: np.ndarray[bool, 2D],
-    signs: np.ndarray[bool, 1D] | None,
-    sub_problem_size: int | None
-) -> tuple[list[list[int]], list[tuple[BatchCreationData, BatchZeroingData]]]
+The expanded fixtures exercise power-of-two and non-power-of-two support sizes, several orders, all-positive and mixed-sign metadata, and mapping injectivity/totality. SIRIUS's basis-row forward/inverse invariants are checked by its own circuit tests; the adapter does not claim the authors' mapping is exactly the same labeling because multiple bijections are valid.
+
+The raw resource counts are exposed under the artifact's stated upper-bound convention. They are not asserted equal to SIRIUS counts when the constructions are not configured identically. Finite small-case counts can differ because pivot choices, sign-column configuration, and algorithm variant affect emitted upper bounds. Such differences remain visible in raw results and need a carefully matched Algorithm 1/Algorithm 3 comparison before a resource-agreement claim.
+
+The official artifact has a counter edge defect in `src/lib.rs`: `BatchZeroingData::num_toffolis()` calculates `changing_size - 2` when `fixed_len == 0`. When `operations` is empty, `next_power_of_two()` is 1 and unsigned subtraction underflows. The adapter retains the raw integer and returns `paper_accounted_toffoli: null` plus `resource_count_status: suspected_usize_underflow` when the value exceeds signed `sys.maxsize`; it does not reinterpret the wrapped result as a Toffoli count.
+
+## Status
+
+- Reference artifact integrity: `PASS`
+- Build and extension load: `PASS`
+- Mapping invariant fixtures: `PASS`
+- Matched smoke reference workload: `PASS` for the one recorded workload; this is not broad paper reproduction.
+- Resource equivalence: `NOT_ESTABLISHED`
+- Known counter underflow: `FAIL` in the official artifact implementation for affected edge cases; preserved and reported.
+- Quantum hardware execution: `NOT_RUN`
+
+Re-run adapter checks with:
+
+```bash
+PYTHONPATH=candidate_ai/src .venv/bin/python -m pytest -q tests/test_authors_adapter.py
 ```
-and:
-```python
-fast_toffoli_counter(circuit) -> int
-```
-
-- **Input Representation:**
-  - `state`: Boolean numpy array of shape `(s, n)`, where each row is an $n$-bit computational basis state.
-  - `signs`: Boolean numpy array of length $s$, where `True` indicates a $-1$ phase sign.
-  - `sub_problem_size`: Optional integer.
-- **Output Representation:**
-  - `bijection`: Mapping of subspace labels to input rows.
-  - `circuit`: Sequence of batch creation and zeroing steps.
-  - `fast_toffoli_counter`: Computes the exact paper-accounted Toffoli cost of the generated batched isometry.
-
----
-
-## 3. SIRIUS Differential Adapter Implementation
-
-SIRIUS implements a clean, isolated adapter in `benchmarking/adapters/authors_adapter.py`:
-- Dynamically loads `_isometry_algorithms.abi3.so` from the extracted reference directory without polluting SIRIUS's package namespace.
-- Does NOT require installing heavy Qualtran or git-pinned dependencies.
-- Converts `SparseStateProblem` instances directly into the required boolean numpy arrays.
-- Provides `is_authors_artifact_available()` and `run_authors_reference_isometry()`.
-- Verified in `tests/test_authors_adapter.py`: on identical support sets, the authors' Rust kernel Toffoli cost matches SIRIUS's independent batched isometry implementation.
-
----
-
-## 4. Fallback & Cross-Platform Protection
-
-If running on an operating system or CPU architecture where `_isometry_algorithms.abi3.so` is incompatible (e.g. non-Linux x86_64 without Rust installed), the adapter gracefully reports:
-- `available = False`
-- `blocked_reason = "Building requires Rust toolchain and maturin: 'maturin develop' or 'uv sync'"`
-- Benchmark runner marks `authors_reference_artifact` jobs as `status = "skipped"` with the exact blocked reason recorded, preserving run integrity without crashing.
