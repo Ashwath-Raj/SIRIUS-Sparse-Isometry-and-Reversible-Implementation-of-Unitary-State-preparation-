@@ -6,7 +6,7 @@
 
 ## Research objective
 
-Independently implement and validate the sparse-state preparation construction described by Felix Rupprecht and Sabine Wölk, then quantify its logical resource scaling and classical construction behavior against a Malvetti-style isometry baseline and, after adapter integration, the authors' published reference artifact.
+Independently implement and validate the sparse-state preparation construction described by Felix Rupprecht and Sabine Wölk, then quantify logical resources and classical construction against a Malvetti-style baseline and the authors' reference artifact where their interfaces and accounting are comparable.
 
 The target problem is an `s`-sparse state on `n` qubits,
 
@@ -30,16 +30,16 @@ where the basis support strings `x_i` are unique, `c_i` are normalized complex c
 
 ## Validation status at Phase 9.1 planning
 
-The latest local Phase 8.2 run reported 148 passed and 2 CUDA tests skipped because CuPy/CUDA was unavailable in that Python environment. Phase 8.2 was committed locally as `99470d1`; Phase 8.1 was amended to `7caa41a`. Earlier Phase 6 logs reported successful CuPy execution on the development RTX 3050. These are local development/test observations, not benchmark results and not device performance claims.
+Historical Phase 8.2 logs reported 148 passed and 2 CUDA tests skipped in that environment. Phase 8.2 was committed locally as `99470d1`; Phase 8.1 was amended to `7caa41a`. Earlier Phase 6 logs reported successful CuPy execution on a development RTX 3050. These are historical local observations, not current benchmark results; see the final validation report for this checkout.
 
 ## What is not yet claimed
 
 - No cross-device performance results exist in Phase 9.1.
-- The authors' reference artifact has not yet been integrated into a common automated benchmark adapter.
+- The authors' official Rust adapter is available, but mapping invariants and resource values have different comparison limits; broad resource agreement is not established.
 - There is no full GPU complex-statevector simulator in the current project.
 - The CuPy backend does not distribute one statevector across multiple GPUs or pool VRAM.
 - The logical IR is not yet a backend-native transpiled circuit; physical gate depth, T-count and device execution require an explicit backend/decomposition choice.
 
 ## Project completion boundary
 
-Phase 9.1 completes the project architecture, evidence package, benchmark contract and institutional access case. Phase 9.2 is local, device-specific execution and result collection; its device manifests, raw measurements and temporary environment files are intentionally uncommitted.
+Phase 9.1 defines the benchmark contract. Phase 9.2 execution is local and device-specific; the repair smoke, raw records and manifest are stored in `research/phase9_repair/runs/` and tied to a dirty-tree source digest.

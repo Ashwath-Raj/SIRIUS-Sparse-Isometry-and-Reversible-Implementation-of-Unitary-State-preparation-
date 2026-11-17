@@ -149,4 +149,8 @@ The classical compiler/control flow remains CPU-side. A GPU speedup claim is per
 - Dean-facing DGX access brief and reproducibility protocol committed.
 - No benchmark results or device-specific claims fabricated.
 
-Phase 9.2 is the local, uncommitted execution phase: device setup, machine manifests, author adapter, raw data capture, analysis and final plots.
+Phase 9.2 is the local execution phase: device setup, machine manifests, author adapter, raw data capture, analysis and final plots.
+
+### Final validation status correction
+
+The adapter and runner now exist. The local repair smoke is not the full benchmark matrix. The CuPy lane executes emitted SIRIUS reversible operations over basis rows and requires a real CUDA device for GPU acceptance. See `docs/research/FINAL_VALIDATION_REPORT.md` for actual run statuses and current evidence scope.

@@ -4,9 +4,11 @@
   "type": "object",
   "required": ["summary_version", "plan_id", "aggregation_method", "grouping_keys", "groups", "source_record_hashes"],
   "properties": {
-    "summary_version": {"const": "1.0.0"}, "plan_id": {"type": "string"}, "aggregation_method": {"type": "string"},
+    "summary_version": {"const": "2.0.0"}, "plan_id": {"type": "string"}, "aggregation_method": {"type": "string"},
     "grouping_keys": {"type": "array", "items": {"type": "string"}},
-    "groups": {"type": "array", "items": {"type": "object", "required": ["algorithm_id", "n", "s", "metric", "count", "median", "iqr", "minimum", "maximum"], "properties": {"algorithm_id": {"type": "string"}, "n": {"type": "integer"}, "s": {"type": "integer"}, "metric": {"type": "string"}, "count": {"type": "integer", "minimum": 1}, "median": {"type": "number"}, "iqr": {"type": "number"}, "minimum": {"type": "number"}, "maximum": {"type": "number"}}, "additionalProperties": true}},
+    "groups": {"type": "array", "items": {"type": "object", "required": ["algorithm_id", "n", "s", "metric", "unit", "count", "median", "iqr", "minimum", "maximum"], "properties": {"algorithm_id": {"type": "string"}, "n": {"type": "integer"}, "s": {"type": "integer"}, "metric": {"type": "string"}, "unit": {"type": "string"}, "count": {"type": "integer", "minimum": 0}, "median": {"type": "number"}, "iqr": {"type": "number"}, "minimum": {"type": "number"}, "maximum": {"type": "number"}}, "additionalProperties": true}},
+    "paired_comparisons": {"type": "array", "items": {"type": "object", "required": ["candidate_algorithm_id", "reference_algorithm_id", "metric", "unit", "count", "pairing_keys"], "properties": {"candidate_algorithm_id": {"type": "string"}, "reference_algorithm_id": {"type": "string"}, "metric": {"type": "string"}, "unit": {"type": "string"}, "count": {"type": "integer", "minimum": 1}, "pairing_keys": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": true}},
+    "record_validation_errors": {"type": "array", "items": {"type": "object", "required": ["file", "line", "errors"], "properties": {"file": {"type": "string"}, "line": {"type": "integer", "minimum": 1}, "run_id": {"type": ["string", "null"]}, "errors": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": true}},
     "source_record_hashes": {"type": "array", "items": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
   },
   "additionalProperties": false

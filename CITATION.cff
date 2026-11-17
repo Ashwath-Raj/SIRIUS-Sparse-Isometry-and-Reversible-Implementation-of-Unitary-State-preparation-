@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software or benchmark artifacts, please cite both the paper and this implementation."
+title: "SIRIUS: Sparse Isometry and Reversible Implementation of Unitary State Preparation"
+version: 0.9.2
+date-released: 2026-11-16
+license: Apache-2.0
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Rupprecht"
+      given-names: "Felix"
+    - family-names: "Wölk"
+      given-names: "Sabine"
+  title: "Sparse quantum state preparation with improved Toffoli cost"
+  journal: "Quantum"
+  volume: 10
+  pages: 2208
+  year: 2026
+  doi: "10.22331/q-2026-09-10-2208"
+  url: "https://quantum-journal.org/papers/q-2026-09-10-2208/"
+references:
+  - type: data
+    title: "Code for Sparse quantum state preparation with improved Toffoli cost"
+    authors:
+      - family-names: "Rupprecht"
+        given-names: "Felix"
+      - family-names: "Wölk"
+        given-names: "Sabine"
+    year: 2026
+    publisher: "Zenodo"
+    doi: "10.5281/zenodo.18234600"
+    url: "https://zenodo.org/records/18234600"

@@ -22,7 +22,7 @@ def build_manifest(root: Path) -> dict:
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument('--root',type=Path,default=DEFAULT_ROOT); ap.add_argument('--output',type=Path); a=ap.parse_args()
-    manifest=build_manifest(a.root); out=a.output or a.root/'research-notes'/'source_manifest.json'
+    manifest=build_manifest(a.root); out=a.output or a.root/'research'/'maintenance'/'source_manifest.json'
     out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8')
     print(json.dumps(manifest,indent=2)); print(f'Wrote {out}')
     return 0 if manifest['file_count']>=1 else 2

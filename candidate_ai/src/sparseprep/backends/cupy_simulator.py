@@ -22,6 +22,26 @@ def _cupy():
 def simulate_int_states_cupy(states, n: int, gates):
     if isinstance(n, bool) or not isinstance(n, int) or not 1 <= n <= 63:
         raise ValueError("CuPy uint64 backend supports 1 <= n <= 63")
+    def validate_wire(wire: int) -> None:
+        if isinstance(wire, bool) or not isinstance(wire, int) or not 0 <= wire < n:
+            raise ValueError(f"wire index must lie in [0, {n})")
+
+    supported = (X, SWAP, CX, Toffoli, NegativeControlToffoli, CMX, MCX)
+    for gate in gates:
+        if isinstance(gate, (PUIMacro, InversePUIMacro)):
+            raise UnsupportedGateError("PUI macro simulation is deferred to Phase 5")
+        if not isinstance(gate, supported):
+            raise UnsupportedGateError(f"unsupported gate type: {type(gate).__name__}")
+        if isinstance(gate, X): wires = (gate.target,)
+        elif isinstance(gate, SWAP): wires = (gate.a, gate.b)
+        elif isinstance(gate, CX): wires = (gate.control, gate.target)
+        elif isinstance(gate, Toffoli): wires = (gate.control_a, gate.control_b, gate.target)
+        elif isinstance(gate, NegativeControlToffoli): wires = (*gate.controls, gate.target)
+        elif isinstance(gate, CMX): wires = (gate.control, *gate.targets)
+        else: wires = (*gate.controls, gate.target)
+        for wire in wires:
+            validate_wire(wire)
+
     cp = _cupy()
     values = cp.asarray(states, dtype=cp.uint64).copy()
     limit = cp.uint64(1 << n)
@@ -29,13 +49,10 @@ def simulate_int_states_cupy(states, n: int, gates):
         raise ValueError("basis-state integer does not fit in n bits")
 
     def mask(wire: int) -> cp.uint64:
-        if isinstance(wire, bool) or not isinstance(wire, int) or not 0 <= wire < n:
-            raise ValueError(f"wire index must lie in [0, {n})")
+        validate_wire(wire)
         return cp.uint64(1 << (n - 1 - wire))
 
     for gate in gates:
-        if isinstance(gate, (PUIMacro, InversePUIMacro)):
-            raise UnsupportedGateError("PUI macro simulation is deferred to Phase 5")
         if isinstance(gate, X):
             values ^= mask(gate.target)
         elif isinstance(gate, SWAP):
@@ -63,8 +80,6 @@ def simulate_int_states_cupy(states, n: int, gates):
                 observed = (values & mask(wire)) != 0
                 active &= observed if bit else ~observed
             values ^= cp.where(active, mask(gate.target), cp.uint64(0))
-        else:
-            raise TypeError(f"unsupported gate type: {type(gate).__name__}")
     return values
 
 

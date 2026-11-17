@@ -14,17 +14,17 @@ Phase 9.1 does **not** execute benchmark workloads, capture hardware telemetry, 
 
 1. **Classical construction:** CPU time, wall time and peak RSS for `run_malvetti_baseline`, `run_batched_isometry`, `run_algorithm3` and `compile_sparse_state_preparation`. Construction timing excludes generator and plot time.
 2. **Logical resources:** paper-accounted and coherent Toffoli estimates, explicitly emitted IR gate histogram, logical qubits, clean ancillas and symbolic macro counts. A Toffoli estimate must never be mislabeled as a physically decomposed native-gate count.
-3. **Execution/validation:** mandatory basis-tableau invariants; exact statevector fidelity and workspace leakage only when the complete logical circuit fits the configured cap; optional CuPy batch parity/throughput when CUDA is available.
+3. **Execution/validation:** mandatory basis-tableau invariants; exact statevector fidelity and workspace leakage only when the complete logical circuit fits the configured cap; optional CuPy execution of the compiled reversible basis-row workload when CUDA is available.
 
 ## Important current backend boundary
 
-The current CuPy backend is a `uint64` **batch of basis-state rows** simulator and supports 1–63 data wires. It is not a complex-amplitude statevector simulator. Phase 8 exact complex-statevector validation is CPU-side and has a configured qubit cap. Consequently, GPU results must be labelled `gpu_basis_batch`; do not call them GPU statevector results. The circuit-construction control flow remains CPU-side in the current implementation.
+The CuPy backend is a `uint64` **batch of computational-basis rows** simulator and supports 1–63 wires. The runner feeds it actual emitted reversible SIRIUS gates and compares outputs against the CPU simulator. It is not a complex-amplitude statevector simulator. Exact complex-statevector validation is CPU-side and capped. The circuit construction remains CPU-side. If CUDA is unavailable, the GPU lane records `unavailable`; it is not a pass or a measurement.
 
 ## Comparators
 
 - `independent_batched_isometry`: project implementation, primary candidate.
 - `malvetti_baseline`: internal isometry baseline, run on identical support rows.
-- `authors_reference_artifact`: required external differential comparator. The official artifact must be version-pinned and adapted to the common input/output contract in Phase 9.2 before publishing numeric comparisons. It is not falsely marked as an already-integrated automated runner in Phase 9.1.
+- `authors_reference_artifact`: official Rust adapter, with artifact digest and row-mapping invariant checks. The adapter's mapping and resource outputs have distinct comparison limits; resource equality is not inferred from a different pivot choice or algorithm mode.
 
 ## Generate a dry-run manifest
 
@@ -49,4 +49,6 @@ This only validates and enumerates planned jobs. It does not import or call any 
 8. Emit one immutable raw record per attempted workload, including failures/timeouts/skips.
 9. Validate records against the schema before aggregation.
 
-See `docs/PHASE9_1_BENCHMARK_SYSTEM_DESIGN.md` and `docs/PHASE9_1_REPRODUCIBILITY_PROTOCOL.md`.
+See `docs/benchmarking/PHASE9_1_BENCHMARK_SYSTEM_DESIGN.md` and `docs/benchmarking/PHASE9_1_REPRODUCIBILITY_PROTOCOL.md`.
+
+Final schema additions and current scope are documented in `docs/benchmarking/PHASE9_2_BENCHMARK_PROTOCOL.md`. A full planned scaling/stress campaign has not been run; see `docs/research/FINAL_VALIDATION_REPORT.md` for current local evidence and blockers.

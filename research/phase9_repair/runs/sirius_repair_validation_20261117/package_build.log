@@ -1,0 +1,10 @@
+WARNING: The directory '/home/ashwathraj/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Processing ./.
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: sirius-sparseprep
+  Building wheel for sirius-sparseprep (pyproject.toml): started
+  Building wheel for sirius-sparseprep (pyproject.toml): finished with status 'done'
+  Created wheel for sirius-sparseprep: filename=sirius_sparseprep-0.9.2-py3-none-any.whl size=61639 sha256=60c6435f683eaa6cb4e2ebb06f5bbf9011b6d03ede603c2ff15b07fcdcccc0e4
+  Stored in directory: /tmp/pip-ephem-wheel-cache-v2qsrtyl/wheels/9c/c5/53/cb8c15c51218ea44f3061804e2ae9b402f2a4c5f24017c13f6
+Successfully built sirius-sparseprep
