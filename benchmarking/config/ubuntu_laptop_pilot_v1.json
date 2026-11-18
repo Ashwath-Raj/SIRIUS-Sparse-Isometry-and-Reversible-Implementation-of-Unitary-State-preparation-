@@ -1,0 +1,27 @@
+{
+  "plan_id": "sirius-ubuntu-laptop-pilot-v1",
+  "version": "1.0.0",
+  "platform": "Ubuntu/Linux only",
+  "machine_id": "ubuntu-amd-ryzen6600h-rtx3050-laptop",
+  "tracks": {
+    "paper_reproduction": {
+      "source_plan": "benchmarking/config/phase9_1_benchmark_plan.json",
+      "jobs": 14,
+      "support_family": "seeded_random",
+      "algorithms": ["independent_batched_isometry", "malvetti_baseline", "end_to_end_state_preparation", "authors_reference_artifact"],
+      "n_values": [8, 10], "s_values": [3, 5], "seeds": [101, 211]
+    },
+    "symmetry_structured_sparse_supports": {
+      "extension_version": "1.0.0",
+      "jobs": 48,
+      "n_values": [8, 10], "k": "n//2", "s_values": [3, 5], "seeds": [101, 211],
+      "support_conditions": ["seeded_random:lexicographic", "fixed_hamming_weight:lexicographic", "fixed_hamming_weight:seeded_shuffled"],
+      "algorithms": ["independent_batched_isometry", "malvetti_baseline"]
+    }
+  },
+  "max_combined_attempts": 64,
+  "gpu": {"scope": "emitted reversible gates on uint64 computational-basis rows with CPU parity", "memory_budget_fraction_of_free_vram": 0.35},
+  "timing_repetitions": 1,
+  "selection_seed": 20261117,
+  "note": "Pilot is a pipeline/feasibility check; one observation per job is not a statistical performance claim. Track outputs stay separate."
+}

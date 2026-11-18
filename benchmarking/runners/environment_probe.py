@@ -104,6 +104,7 @@ def get_cpu_info() -> dict[str, Any]:
 def get_memory_info() -> dict[str, int | None]:
     mem_total: int | None = None
     swap_total: int | None = None
+    mem_available: int | None = None
 
     meminfo = Path("/proc/meminfo")
     if meminfo.exists():
@@ -115,11 +116,15 @@ def get_memory_info() -> dict[str, int | None]:
                 elif line.startswith("SwapTotal:") and ":" in line:
                     parts = line.split(":", 1)[1].strip().split()
                     swap_total = int(parts[0]) * 1024
+                elif line.startswith("MemAvailable:") and ":" in line:
+                    parts = line.split(":", 1)[1].strip().split()
+                    mem_available = int(parts[0]) * 1024
         except Exception:
             pass
 
     return {
         "ram_total_bytes": mem_total,
+        "ram_available_bytes": mem_available,
         "swap_total_bytes": swap_total,
     }
 
@@ -134,7 +139,7 @@ def get_gpu_devices() -> list[dict[str, Any]]:
             res = subprocess.run(
                 [
                     smi,
-                    "--query-gpu=index,name,memory.total",
+                    "--query-gpu=index,name,memory.total,memory.free,temperature.gpu,compute_cap",
                     "--format=csv,noheader,nounits",
                 ],
                 capture_output=True,
@@ -153,6 +158,9 @@ def get_gpu_devices() -> list[dict[str, Any]]:
                             "device_id": idx,
                             "name": name,
                             "memory_bytes": mem_mb * 1024 * 1024,
+                            "free_memory_bytes": int(parts[3]) * 1024 * 1024 if len(parts) > 3 and parts[3].isdigit() else None,
+                            "temperature_c": int(parts[4]) if len(parts) > 4 and parts[4].isdigit() else None,
+                            "compute_capability": parts[5] if len(parts) > 5 else None,
                         })
                 if devices:
                     return devices
@@ -171,6 +179,9 @@ def get_gpu_devices() -> list[dict[str, Any]]:
                 "device_id": idx,
                 "name": name,
                 "memory_bytes": int(total_mem) if total_mem is not None else None,
+                "free_memory_bytes": None,
+                "temperature_c": None,
+                "compute_capability": f"{props.get('major')}.{props.get('minor')}",
             })
     except Exception:
         pass
@@ -178,12 +189,15 @@ def get_gpu_devices() -> list[dict[str, Any]]:
     return devices
 
 
-def get_software_versions() -> dict[str, str | None]:
-    versions: dict[str, str | None] = {
+def get_software_versions() -> dict[str, Any]:
+    versions: dict[str, Any] = {
         "nvidia_driver": None,
         "cuda_runtime": None,
         "cuda_toolkit": None,
+        "cuda_driver_compatibility": None,
         "cupy": None,
+        "cupy_runtime_available": False,
+        "cupy_device_count": None,
         "numpy": None,
         "git": get_git_commit(),
     }
@@ -203,6 +217,14 @@ def get_software_versions() -> dict[str, str | None]:
                 versions["nvidia_driver"] = res.stdout.strip().splitlines()[0]
         except Exception:
             pass
+        try:
+            full = subprocess.run([smi], capture_output=True, text=True, timeout=5, check=False)
+            for line in full.stdout.splitlines()[:8]:
+                if "CUDA Version:" in line:
+                    versions["cuda_driver_compatibility"] = line.split("CUDA Version:", 1)[1].split("|")[0].strip()
+                    break
+        except Exception:
+            pass
 
     # CuPy and CUDA version
     try:
@@ -210,6 +232,8 @@ def get_software_versions() -> dict[str, str | None]:
         versions["cupy"] = cp.__version__
         cuda_v = cp.cuda.runtime.runtimeGetVersion()
         versions["cuda_runtime"] = f"{cuda_v // 1000}.{(cuda_v % 1000) // 10}"
+        versions["cupy_device_count"] = int(cp.cuda.runtime.getDeviceCount())
+        versions["cupy_runtime_available"] = versions["cupy_device_count"] > 0
     except Exception:
         pass
 
@@ -296,6 +320,12 @@ def probe_run_environment(hostname_alias: str | None = None) -> dict[str, Any]:
         "cuda_version": software_info.get("cuda_runtime"),
         "cupy_version": software_info.get("cupy"),
         "ram_bytes": mem_info.get("ram_total_bytes"),
+        "ram_available_bytes": mem_info.get("ram_available_bytes"),
+        "swap_bytes": mem_info.get("swap_total_bytes"),
+        "nvidia_driver": software_info.get("nvidia_driver"),
+        "cuda_driver_compatibility": software_info.get("cuda_driver_compatibility"),
+        "cuda_toolkit": software_info.get("cuda_toolkit"),
+        "hardware_fingerprint": hashlib.sha256(json.dumps({"cpu": cpu_info, "gpu": sanitized_gpus, "os": platform.system(), "arch": platform.machine()}, sort_keys=True).encode()).hexdigest(),
     }
 
 

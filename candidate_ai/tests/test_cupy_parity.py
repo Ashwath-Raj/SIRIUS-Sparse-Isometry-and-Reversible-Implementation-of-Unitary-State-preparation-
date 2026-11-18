@@ -34,6 +34,19 @@ def test_cupy_kernel_executes_on_device():
     assert cp.asnumpy(result).tolist() == [5, 4, 7, 6]
 
 
+@pytest.mark.skipif(not _cupy_available(), reason="CuPy CUDA backend unavailable in this Python environment")
+def test_benchmark_gpu_lane_executes_emitted_gates_with_parity_and_prewarms_jit():
+    from benchmarking.runners.run_benchmarks import _execute_gpu_lane
+    result = _execute_gpu_lane(("0001", "1000", "1111"), 4, (X(0), CX(0, 3)), 0, memory_budget_fraction=0.2)
+    assert result["gpu_execution_status"] == "passed"
+    assert result["gpu_rows_verified"] == 3
+    assert result["gpu_chunk_count"] >= 1
+    assert result["gpu_jit_warmup_ms"] >= 0
+    assert result["gpu_kernel_ms"] >= 0
+    assert result["host_to_device_ms"] >= 0
+    assert result["device_to_host_ms"] >= 0
+
+
 def test_cupy_rejects_unsupported_symbolic_pui_explicitly():
     from sparseprep.backends.cupy_simulator import simulate_int_states_cupy
     from sparseprep.simulator import UnsupportedGateError

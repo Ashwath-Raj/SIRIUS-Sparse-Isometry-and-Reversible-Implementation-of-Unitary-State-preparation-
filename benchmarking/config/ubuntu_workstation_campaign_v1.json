@@ -1,0 +1,18 @@
+{
+  "plan_id": "sirius-ubuntu-workstation-campaign-v1",
+  "version": "1.0.0",
+  "platform": "Ubuntu/Linux only",
+  "tracks": {
+    "paper_reproduction": {"source_plan": "benchmarking/config/phase9_1_benchmark_plan.json", "tiers": ["scaling", "stress"], "unchanged": true},
+    "symmetry_structured_sparse_supports": {
+      "extension_version": "1.0.0", "tiers": ["scaling", "stress"],
+      "n_values": [16, 24, 32, 48, 63], "k_policy": "floor(n/2) and ceil(n/2)",
+      "s_policy": [3, 5, 16, 31, 32, 63, 64, 127, 128, 255, 256, 512, 1024],
+      "seeds": [101, 211, 307, 401, 503],
+      "support_conditions": ["seeded_random:lexicographic", "fixed_hamming_weight:lexicographic", "fixed_hamming_weight:seeded_shuffled"],
+      "algorithms": ["independent_batched_isometry", "malvetti_baseline"],
+      "eligibility": "Reject s > binomial(n,k), inputs outside algorithm domain, and GPU wire_count >63 before execution; record the outcome."
+    }
+  },
+  "warning": "Definition only. Not executed on the laptop. Validate resource budget and resume behavior before workstation launch."
+}

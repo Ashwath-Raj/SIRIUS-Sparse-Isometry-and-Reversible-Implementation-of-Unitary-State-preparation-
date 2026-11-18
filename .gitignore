@@ -11,6 +11,7 @@ htmlcov/
 # Virtual environments, including nested environments
 .venv/
 **/.venv/
+.venv-ubuntu-*/
 venv/
 **/venv/
 env/
@@ -46,9 +47,19 @@ results/raw/*.txt
 !results/raw/README.md
 !results/raw/.gitkeep
 !results/raw/phase2/**
+results/raw/*/
 results/summaries/*.json
 !results/summaries/README.md
 !results/summaries/.gitkeep
+results/summaries/*/
+results/tables/*/
+results/manifests/*/
+results/logs/*/
+results/reports/*/
+results/checkpoints/*/
+results/figures/*/
+!results/raw/phase2/
+!results/raw/phase2/**
 
 # Local benchmark outputs
 benchmarking/results/*

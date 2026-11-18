@@ -26,11 +26,11 @@ CuPy is strictly optional. To enable GPU basis-row batch simulation on a system 
 # Check CUDA driver version via nvidia-smi
 nvidia-smi
 
-# For CUDA 12.x:
-pip install cupy-cuda12x
+# For CUDA 12.x (includes pip-managed toolkit components needed for runtime kernel compilation):
+pip install 'cupy-cuda12x[ctk]'
 
 # For CUDA 13.x:
-pip install cupy-cuda13x
+pip install 'cupy-cuda13x[ctk]'
 ```
 
 ---

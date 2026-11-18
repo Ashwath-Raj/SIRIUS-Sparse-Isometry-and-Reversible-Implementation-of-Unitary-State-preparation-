@@ -11,7 +11,7 @@
 
 **SIRIUS** (*Sparse Isometry and Reversible Implementation of Unitary State Preparation*) is an independent, reproducible Python research implementation and benchmarking system for sparse quantum state preparation.
 
-It provides verified quantum circuit synthesis algorithms that prepare sparse quantum states with significantly reduced Toffoli gate overhead compared to standard sequential baselines.
+It provides an independent implementation and experimental evaluation of sparse-state preparation methods. The theoretical resource improvements originate in the referenced paper; the repository documents which implementation and benchmark results have actually been reproduced.
 
 ---
 
@@ -74,7 +74,7 @@ The `sparseprep` package (`candidate_ai/src/sparseprep/`) contains a 100% clean-
 | **Phase 7** | Algorithm 3 sign- and marker-aware construction | Completed | `candidate_ai/src/sparseprep/algorithm3.py` |
 | **Phase 8** | Phase synthesis and end-to-end state preparation | Completed | `candidate_ai/src/sparseprep/state_preparation.py`, `phase_synthesis.py` |
 | **Phase 9.1** | Benchmark architecture, schemas, and plan design | Completed | `benchmarking/config/`, `benchmarking/schemas/` |
-| **Phase 9.2** | Device-local benchmark execution & research validation | **Partially validated** | `docs/research/FINAL_VALIDATION_REPORT.md`; local raw smoke evidence |
+| **Phase 9.2** | Device-local benchmark execution & research validation | **Bounded campaign completed; paper reproduction partial** | `docs/research/PUBLIC_BENCHMARK_RESULTS.md`; campaign release |
 
 ---
 
@@ -84,7 +84,7 @@ Phase 9.2 turns the Phase 9.1 benchmark architecture into an executable, reprodu
 - **Environment Probe:** Detects sanitized hardware and runtime details (CPU, RAM, GPU, driver, CUDA, CuPy).
 - **Benchmark Runner:** Executes parameterized workloads across comparison methods with high-resolution wall-clock (`perf_counter_ns`) and CPU (`process_time_ns`) timers, peak RSS tracking, and process isolation.
 - **Statistical Aggregation:** Aggregates immutable raw JSONL records, calculating median, IQR, min, max, and 95% bootstrap confidence intervals over independent seeds.
-- **GPU Basis-Row Lane:** Applies emitted SIRIUS reversible operations to basis rows on CUDA when available and checks parity against the CPU simulator. This is not complex-amplitude simulation. No GPU execution was available in the current validation environment.
+- **GPU Basis-Row Lane:** Applies emitted SIRIUS reversible operations to basis rows on CUDA when available and checks parity against the CPU simulator. This is not complex-amplitude simulation. The Ubuntu RTX 3050 campaign is separately recorded under `results/raw/<machine-id>/`; the earlier Phase 9.2 validation report remains a historical no-GPU run.
 
 ---
 
@@ -162,9 +162,21 @@ pip install -e ".[dev]"
 ### Optional GPU Installation
 For GPU basis-row batch throughput testing (requires NVIDIA GPU with CUDA driver):
 ```bash
-# E.g. for CUDA 13.x
-pip install cupy-cuda13x
+# Prefer the runtime-aware Ubuntu setup, which checks driver compatibility and kernel-header availability.
+bash scripts/ubuntu/setup.sh
 ```
+
+### Ubuntu reproducibility workflow
+
+On Ubuntu, use the idempotent scripts. They do not install system packages or drivers and preserve an existing `.venv` that uses another Python version.
+
+```bash
+bash scripts/ubuntu/setup.sh
+SIRIUS_PYTHON="$PWD/.venv-ubuntu-3.12/bin/python" bash scripts/ubuntu/preflight.sh
+SIRIUS_PYTHON="$PWD/.venv-ubuntu-3.12/bin/python" bash scripts/ubuntu/run_laptop_pilot.sh
+```
+
+The bounded combined pilot writes separate raw result tracks for original random-support paper reproduction and the exploratory **Symmetry-Structured Sparse Supports** extension. The CuPy lane executes emitted reversible gates on `uint64` computational-basis rows with CPU parity. It does not perform GPU construction or complex-amplitude statevector simulation. See [Ubuntu setup](docs/development/UBUNTU_SETUP.md), [the RTX 3050 workflow](docs/benchmarking/UBUNTU_RTX3050_WORKFLOW.md), and [result layout](docs/benchmarking/RESULTS_LAYOUT.md).
 
 ---
 
@@ -212,14 +224,14 @@ python -m benchmarking.analysis.aggregate \
 The CuPy backend (`sparseprep.backends.cupy_simulator`) executes supported reversible gates over batches of computational-basis rows represented as `uint64` integers ($1 \le n \le 63$).
 - **What it is:** A classical basis-row executor that can check CPU parity for emitted reversible gate sequences when CUDA is available.
 - **What it is NOT:** It is NOT a complex-amplitude statevector simulator. It does NOT implement circuit compilation on GPU. It does NOT distribute a statevector across multiple GPUs.
-- GPU lane results distinguish transfer, kernel and total lane time. No GPU device was available during the latest local validation, so no acceleration or throughput result is claimed.
+- GPU lane results distinguish transfer, kernel and total lane time. Any performance observation belongs to its machine-specific run; basis-row throughput is not a statevector speedup or a construction acceleration claim.
 
 ---
 
 ## 12. What Is Not Yet Implemented
 
 1. **Hardware-Native Transpilation:** Circuit outputs are logical reversible gate IR (`CMX`, `CX`, `MCX`, `Toffoli`). Physical hardware gate counts (e.g. Clifford+T, native 2-qubit gates, physical depth) require transpilation to a concrete hardware basis.
-2. **Full benchmark campaign:** Current evidence is a one-seed matched smoke, not the complete planned scaling/stress matrix. Reference mapping checks run locally; broad resource agreement remains unestablished.
+2. **Reproduction coverage:** The published RTX 3050 campaign is a partial Figure 10 reproduction. The `10^7` points did not complete, `10^6` is incomplete, matched SIRIUS–Malvetti scaling is limited, and the symmetry extension remains exploratory.
 
 ---
 
@@ -257,7 +269,26 @@ print("Resources:", circuit.resources)
 
 ---
 
-## 14. Citation
+<!-- SIRIUS_PUBLIC_BENCHMARK_EVIDENCE_BEGIN -->
+
+## 14. Reproduced benchmark evidence (Ubuntu RTX 3050)
+
+The completed campaign and data-quality closure are published as immutable assets in the [SIRIUS Ubuntu RTX 3050 benchmark release](https://github.com/Ashwath-Raj/SIRIUS-Sparse-Isometry-and-Reversible-Implementation-of-Unitary-State-preparation-/releases/tag/sirius-ubuntu-rtx3050-campaign-20261117). Detailed tables, plots, attempt accounting and limitations are in [PUBLIC_BENCHMARK_RESULTS.md](docs/research/PUBLIC_BENCHMARK_RESULTS.md).
+
+| Track | Attempts | Completed | Failed | Timed out | Resource-capped |
+|---|---:|---:|---:|---:|---:|
+| Authors' Figure 10 reproduction | 469 | 316 | 51 | 14 | 88 |
+| Symmetry extension | 216 | 204 | 0 | 12 | 0 |
+
+Figure 10 coverage: both variants completed 19/19 selected widths for each of \(10^2\)–\(10^5\); 15/19 at \(10^6\); no completed measurements at \(10^7\). This is a partial reproduction.
+
+At \(n=9,s=100\), the five-seed matched SIRIUS–Malvetti experiment recorded median runtimes of 289.889 ms and 100.483 ms, respectively. These are implementation-level timings with distinct timing scopes, not an authors' Figure 10 speedup comparison. The symmetry extension has three independent seeds per stratum and is exploratory.
+
+The GPU lane is CuPy `uint64` basis-row simulation, not complex-amplitude statevector simulation. The report and release archive preserve failures, timeouts, resource caps, duplicate-attempt audits, raw JSONL records and checksums. Do not interpret timer repetitions or duplicate job attempts as independent seeds.
+
+<!-- SIRIUS_PUBLIC_BENCHMARK_EVIDENCE_END -->
+
+## 15. Citation
 
 If you use this software, please cite both the paper and this implementation:
 

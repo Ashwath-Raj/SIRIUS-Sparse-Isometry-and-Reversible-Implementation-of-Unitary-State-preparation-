@@ -322,8 +322,11 @@ def _execute_compile_worker(
     }
 
 
-def _execute_gpu_lane(support: tuple[str, ...], n: int, gates: tuple[Any, ...], ancilla_count: int) -> dict[str, Any]:
-    """Execute a compiled SIRIUS reversible sequence on GPU basis rows and check CPU parity."""
+def _execute_gpu_lane(
+    support: tuple[str, ...], n: int, gates: tuple[Any, ...], ancilla_count: int,
+    *, memory_budget_fraction: float = 0.35,
+) -> dict[str, Any]:
+    """Execute compiled SIRIUS gates on uint64 basis rows under a VRAM budget."""
     from sparseprep.simulator import simulate_basis_state
 
     try:
@@ -343,35 +346,62 @@ def _execute_gpu_lane(support: tuple[str, ...], n: int, gates: tuple[Any, ...], 
     if wire_count > 63:
         return {"gpu_execution_status": "unsupported_width", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": f"uint64 backend limit is 63 wires; workload requires {wire_count}"}
 
+    if not 0 < memory_budget_fraction <= 0.5:
+        raise ValueError("memory_budget_fraction must lie in (0, 0.5]")
+    free_vram, total_vram = cp.cuda.runtime.memGetInfo()
+    budget_bytes = int(free_vram * memory_budget_fraction)
+    # uint64 input/output plus several temporary boolean masks per row.
+    bytes_per_row = max(64, 8 * (4 + 2 * len(gates)))
+    chunk_rows = max(1, budget_bytes // bytes_per_row)
     rows = tuple(s + "0" * ancilla_count for s in support)
-    int_words = [bitstring_to_int(s) for s in rows]
     expected = tuple(simulate_basis_state(row, gates) for row in rows)
+    warm_rows = rows[:max(1, min(len(rows), chunk_rows))]
+    warm_states = [bitstring_to_int(s) for s in warm_rows]
+    warm_t0 = time.perf_counter_ns()
+    warm_out = simulate_int_states_cupy(cp.asarray(warm_states, dtype=cp.uint64), wire_count, gates)
+    cp.cuda.Stream.null.synchronize()
+    warmup_ms = (time.perf_counter_ns() - warm_t0) / 1e6
+    del warm_out
+    outputs: list[str] = []
+    h2d_ns = kernel_ns = d2h_ns = 0
     t0_total = time.perf_counter_ns()
-    t0_h2d = time.perf_counter_ns()
-    d_arr = cp.asarray(int_words, dtype=cp.uint64)
-    cp.cuda.Stream.null.synchronize()
-    t1_h2d = time.perf_counter_ns()
-    t0_kern = time.perf_counter_ns()
-    d_out = simulate_int_states_cupy(d_arr, wire_count, gates)
-    cp.cuda.Stream.null.synchronize()
-    t1_kern = time.perf_counter_ns()
-    t0_d2h = time.perf_counter_ns()
-    h_out = cp.asnumpy(d_out)
-    cp.cuda.Stream.null.synchronize()
-    t1_d2h = time.perf_counter_ns()
+    chunks = 0
+    for offset in range(0, len(rows), chunk_rows):
+        chunk = rows[offset:offset + chunk_rows]
+        int_words = [bitstring_to_int(s) for s in chunk]
+        t0_h2d = time.perf_counter_ns()
+        d_arr = cp.asarray(int_words, dtype=cp.uint64)
+        cp.cuda.Stream.null.synchronize()
+        h2d_ns += time.perf_counter_ns() - t0_h2d
+        t0_kern = time.perf_counter_ns()
+        d_out = simulate_int_states_cupy(d_arr, wire_count, gates)
+        cp.cuda.Stream.null.synchronize()
+        kernel_ns += time.perf_counter_ns() - t0_kern
+        t0_d2h = time.perf_counter_ns()
+        h_out = cp.asnumpy(d_out)
+        cp.cuda.Stream.null.synchronize()
+        d2h_ns += time.perf_counter_ns() - t0_d2h
+        outputs.extend(format(int(value), f"0{wire_count}b") for value in h_out)
+        chunks += 1
     t1_total = time.perf_counter_ns()
-    actual = tuple(format(int(value), f"0{wire_count}b") for value in h_out)
-    if actual != expected:
+    if tuple(outputs) != expected:
         return {"gpu_execution_status": "parity_failed", "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW", "gpu_error": "GPU basis-row output differs from CPU simulator"}
 
     return {
         "gpu_execution_status": "passed",
         "gpu_execution_kind": "SIRIUS_REVERSIBLE_BASIS_ROW",
         "gpu_basis_batch_wall_ms": (t1_total - t0_total) / 1e6,
-        "gpu_kernel_ms": (t1_kern - t0_kern) / 1e6,
-        "host_to_device_ms": (t1_h2d - t0_h2d) / 1e6,
-        "device_to_host_ms": (t1_d2h - t0_d2h) / 1e6,
+        "gpu_kernel_ms": kernel_ns / 1e6,
+        "host_to_device_ms": h2d_ns / 1e6,
+        "device_to_host_ms": d2h_ns / 1e6,
         "gpu_rows_verified": len(rows),
+        "gpu_chunk_count": chunks,
+        "gpu_chunk_rows": int(chunk_rows),
+        "gpu_memory_budget_bytes": budget_bytes,
+        "gpu_free_vram_before_bytes": int(free_vram),
+        "gpu_total_vram_bytes": int(total_vram),
+        "gpu_jit_warmup_ms": warmup_ms,
+        "gpu_timing_scope": "synchronized H2D + reversible basis-row kernels + D2H; CPU expected-output calculation excluded",
     }
 
 

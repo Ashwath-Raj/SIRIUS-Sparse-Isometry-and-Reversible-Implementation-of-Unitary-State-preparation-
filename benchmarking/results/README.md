@@ -1,23 +1,9 @@
-# Benchmark result storage (Phase 9.2 only)
+# Benchmark result storage
 
-This directory is intentionally empty in Phase 9.1. Do not add fabricated or illustrative measurements.
+The schema and runner definitions live in this directory's parent. Measured result evidence is published separately:
 
-Phase 9.2 writes immutable raw JSONL/JSON run records under a device-and-date folder, plus summaries generated from those raw records. Keep each machine's raw records separate; merge only after schema validation and provenance checks.
+- Public campaign report: [docs/research/PUBLIC_BENCHMARK_RESULTS.md](../../docs/research/PUBLIC_BENCHMARK_RESULTS.md)
+- Immutable campaign release: https://github.com/Ashwath-Raj/SIRIUS-Sparse-Isometry-and-Reversible-Implementation-of-Unitary-State-preparation-/releases/tag/sirius-ubuntu-rtx3050-campaign-20261117
+- Earlier matched smoke raw records and summary: [research/phase9_repair/runs/sirius_repair_validation_20261117/](../../research/phase9_repair/runs/sirius_repair_validation_20261117/)
 
-Suggested local-only layout (not committed):
-
-```text
-benchmarking/local-runs/                # gitignored in Phase 9.2
-  laptop-rtx3050/2026-.../
-    machine-manifest.json
-    raw-runs.jsonl
-    summary.json
-    plots/
-  dgx-node-alias/2026-.../
-    machine-manifest.json
-    raw-runs.jsonl
-    summary.json
-    plots/
-```
-
-The committed project contains schemas and templates, not device measurements.
+The release archives include the raw JSONL attempt records, deduplicated analytical tables, plots, manifests, validation logs and SHA-256 checksums. Do not commit the 240 MB closure archive into ordinary Git history; it is distributed as a release asset.

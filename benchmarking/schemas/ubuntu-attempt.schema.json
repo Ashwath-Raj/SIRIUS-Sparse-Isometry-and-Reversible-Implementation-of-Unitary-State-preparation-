@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sirius.example/schemas/ubuntu-attempt-v1.json",
+  "title": "SIRIUS Ubuntu research campaign attempt",
+  "type": "object",
+  "required": ["record_version", "plan_id", "track", "run_id", "job_id", "algorithm_id", "status", "seed", "started_at_utc", "ended_at_utc"],
+  "properties": {
+    "record_version": {"const": "ubuntu-attempt-v1"},
+    "plan_id": {"type": "string"},
+    "track": {"enum": ["paper_reproduction", "symmetry_structured_sparse_supports"]},
+    "run_id": {"type": "string"},
+    "job_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "algorithm_id": {"type": "string"},
+    "status": {"enum": ["completed", "failed", "skipped", "timed_out", "invalid"]},
+    "seed": {"type": "integer"},
+    "started_at_utc": {"type": "string"},
+    "ended_at_utc": {"type": "string"},
+    "input_identity": {"type": "object"},
+    "problem": {"type": "object"},
+    "resources": {"type": "object"},
+    "correctness": {"type": "object"},
+    "timings": {"type": "object"},
+    "gpu": {"type": "object"},
+    "provenance": {"type": "object"}
+  },
+  "additionalProperties": true
+}
